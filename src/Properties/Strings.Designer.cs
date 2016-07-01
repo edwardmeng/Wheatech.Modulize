@@ -88,6 +88,24 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The json token {0} is not supported in the file {1}. 的本地化字符串。
+        /// </summary>
+        internal static string Locator_InvalidJsonToken {
+            get {
+                return ResourceManager.GetString("Locator_InvalidJsonToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The format is invalid at line {0} in the file {1}. 的本地化字符串。
+        /// </summary>
+        internal static string Locator_InvalidTextLine {
+            get {
+                return ResourceManager.GetString("Locator_InvalidTextLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 &apos;{0}&apos; is not a valid dependency in the manifest file of the module {1}. 的本地化字符串。
         /// </summary>
         internal static string Manifest_InvalidDependency {
@@ -111,6 +129,15 @@ namespace Wheatech.Modulize.Properties {
         internal static string Manifest_InvalidFormat {
             get {
                 return ResourceManager.GetString("Manifest_InvalidFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The json token {0} is not supported in the manifest file of the module {1}. 的本地化字符串。
+        /// </summary>
+        internal static string Manifest_InvalidJsonToken {
+            get {
+                return ResourceManager.GetString("Manifest_InvalidJsonToken", resourceCulture);
             }
         }
         

@@ -36,6 +36,10 @@
     <AssemblyOriginatorKeyFile>..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -44,10 +48,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
     <Reference Include="Wheatech">
-      <HintPath>..\packages\Wheatech.1.0.0\lib\net461\Wheatech.dll</HintPath>
+      <HintPath>..\packages\Wheatech.1.0.0\lib\Wheatech.dll</HintPath>
     </Reference>
-    <Reference Include="Wheatech.Activation">
-      <HintPath>..\packages\Wheatech.Activation.1.0.0\lib\net461\Wheatech.Activation.dll</HintPath>
+    <Reference Include="Wheatech.Activation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
+      <HintPath>..\packages\Wheatech.Activation.1.0.1\lib\net461\Wheatech.Activation.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -64,7 +69,20 @@
     <Compile Include="ComponentModel\ModuleDescriptor.cs" />
     <Compile Include="ComponentModel\ModuleManageState.cs" />
     <Compile Include="ComponentModel\ModuleRuntimeState.cs" />
+    <Compile Include="Discover\AssemblyModuleDiscover.cs" />
+    <Compile Include="Discover\CompressionModuleDiscover.cs" />
+    <Compile Include="Discover\DirectoryModuleDiscover.cs" />
+    <Compile Include="Discover\DiscoverStrategy.cs" />
+    <Compile Include="Discover\IModuleDiscover.cs" />
+    <Compile Include="Discover\LocationModuleDiscover.cs" />
+    <Compile Include="Discover\ModuleDiscoverCollection.cs" />
+    <Compile Include="Discover\XmlModuleDiscover.cs" />
     <Compile Include="IPersistStore.cs" />
+    <Compile Include="Locator\IModuleLocator.cs" />
+    <Compile Include="Locator\JsonModuleLocator.cs" />
+    <Compile Include="Locator\ModuleLocation.cs" />
+    <Compile Include="Locator\TextModuleLocator.cs" />
+    <Compile Include="Locator\XmlModuleLocator.cs" />
     <Compile Include="Manifest\IManifestParser.cs" />
     <Compile Include="Manifest\JsonManifestParser.cs" />
     <Compile Include="Manifest\ManifestHelper.cs" />
@@ -91,6 +109,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

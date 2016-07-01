@@ -126,6 +126,12 @@
   <data name="Invalid_Dependency" xml:space="preserve">
     <value>'{0}' is not a valid dependency string.</value>
   </data>
+  <data name="Locator_InvalidJsonToken" xml:space="preserve">
+    <value>The json token {0} is not supported in the file {1}.</value>
+  </data>
+  <data name="Locator_InvalidTextLine" xml:space="preserve">
+    <value>The format is invalid at line {0} in the file {1}.</value>
+  </data>
   <data name="Manifest_InvalidDependency" xml:space="preserve">
     <value>'{0}' is not a valid dependency in the manifest file of the module {1}.</value>
   </data>
@@ -134,6 +140,9 @@
   </data>
   <data name="Manifest_InvalidFormat" xml:space="preserve">
     <value>The format of {0} is invalid in the manifest file of the module {1}.</value>
+  </data>
+  <data name="Manifest_InvalidJsonToken" xml:space="preserve">
+    <value>The json token {0} is not supported in the manifest file of the module {1}.</value>
   </data>
   <data name="Manifest_InvalidTextLine" xml:space="preserve">
     <value>The format is invalid at line {0} in the manifest file of the module {1}.</value>

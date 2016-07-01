@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
 {
@@ -12,22 +13,22 @@ namespace Wheatech.Modulize
         {
             using (var reader = new StreamReader(stream))
             {
-                return ManifestHelper.BuildModule(ConvertToDictionary(JObject.Parse(reader.ReadToEnd())), moduleId);
+                return ManifestHelper.BuildModule(ConvertToDictionary(JObject.Parse(reader.ReadToEnd()), moduleId), moduleId);
             }
         }
 
-        private Dictionary<string, object> ConvertToDictionary(JObject obj)
+        private Dictionary<string, object> ConvertToDictionary(JObject obj, string moduleId)
         {
             var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             if (obj == null) return values;
             foreach (var property in obj.Properties())
             {
-                values.Add(property.Name, ConvertJsonValue(property.Value));
+                values.Add(property.Name, ConvertJsonValue(property.Value, moduleId));
             }
             return values;
         }
 
-        private object ConvertJsonValue(JToken value)
+        private object ConvertJsonValue(JToken value, string moduleId)
         {
             switch (value.Type)
             {
@@ -44,17 +45,17 @@ namespace Wheatech.Modulize
                 case JTokenType.Null:
                     return ((JValue)value).Value;
                 case JTokenType.Object:
-                    return ConvertToDictionary((JObject)value);
+                    return ConvertToDictionary((JObject)value, moduleId);
                 case JTokenType.Array:
                     var jarray = (JArray)value;
                     var array = new ArrayList();
                     foreach (var element in jarray)
                     {
-                        array.Add(ConvertJsonValue(element));
+                        array.Add(ConvertJsonValue(element, moduleId));
                     }
                     return array.ToArray();
                 default:
-                    throw new NotSupportedException(string.Format("The json token {0} is not supported", value.Type));
+                    throw new NotSupportedException(string.Format(Strings.Manifest_InvalidJsonToken, value.Type, moduleId));
             }
         }
     }
