@@ -61,6 +61,87 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 There are multiple types implemented IFeatureActivator interface and the FeatureId returns the same value &quot;{0}&quot; in the assembly {1}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_AmbiguousExplicitFeatureActivator {
+            get {
+                return ResourceManager.GetString("Activation_AmbiguousExplicitFeatureActivator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 There are multiple types implemented IFeatureActivator interface without FeatureId in the assembly {0}. The application cannot determine which one should be used. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_AmbiguousImplictFeatureActivator {
+            get {
+                return ResourceManager.GetString("Activation_AmbiguousImplictFeatureActivator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The parameter {0} of the method {1} declared in the type {2} has not been registered. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotFindParameter {
+            get {
+                return ResourceManager.GetString("Activation_CannotFindParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The method {0} in the type {1} cannot be generic. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotGenericMethod {
+            get {
+                return ResourceManager.GetString("Activation_CannotGenericMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 There are multiple public method {0} have been found in the type {1}. The application cannot determine which one should be used to invoke. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotMultipleMethod {
+            get {
+                return ResourceManager.GetString("Activation_CannotMultipleMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The parameter {0} of the method {1} declared in the type {2} cannot be out or ref. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_InvalidParameter {
+            get {
+                return ResourceManager.GetString("Activation_InvalidParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The property {0} declared in the type {1} cannot have index parameters. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_PropertyCannotBeIndexer {
+            get {
+                return ResourceManager.GetString("Activation_PropertyCannotBeIndexer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The property {0} declared in the type {1} does not have getter method. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_PropertyMustCanRead {
+            get {
+                return ResourceManager.GetString("Activation_PropertyMustCanRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The return value of property {0} declared in the type {1} must be string. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_PropertyMustReturnString {
+            get {
+                return ResourceManager.GetString("Activation_PropertyMustReturnString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Value cannot be null or an empty string. 的本地化字符串。
         /// </summary>
         internal static string Argument_Cannot_Be_Null_Or_Empty {
@@ -75,6 +156,42 @@ namespace Wheatech.Modulize.Properties {
         internal static string Collection_ReadOnly {
             get {
                 return ResourceManager.GetString("Collection_ReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Ambiguous assemblies have been found for the entry assembly of the feature {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Discover_AmbiguousFeatureEntry {
+            get {
+                return ResourceManager.GetString("Discover_AmbiguousFeatureEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Ambiguous assemblies have been found for the entry assembly of the module {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Discover_AmbiguousModuleEntry {
+            get {
+                return ResourceManager.GetString("Discover_AmbiguousModuleEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The entry assembly for the feature {0} cannot be found: {1} 的本地化字符串。
+        /// </summary>
+        internal static string Discover_CannotFindFeatureEntry {
+            get {
+                return ResourceManager.GetString("Discover_CannotFindFeatureEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The entry assembly for the module {0} cannot be found: {1} 的本地化字符串。
+        /// </summary>
+        internal static string Discover_CannotFindModuleEntry {
+            get {
+                return ResourceManager.GetString("Discover_CannotFindModuleEntry", resourceCulture);
             }
         }
         

@@ -74,6 +74,18 @@ namespace Wheatech.Modulize
             return new AssemblyIdentity(Path.GetFileNameWithoutExtension(FileName), FileVersion ?? ProductVersion, Culture);
         }
 
+        public bool Match(AssemblyIdentity assemblyIdentity)
+        {
+            if (Path.GetFileNameWithoutExtension(FileName)!=assemblyIdentity.ShortName) return false;
+            if (Culture != null && !string.Equals(Culture.Name, assemblyIdentity.CultureName, StringComparison.OrdinalIgnoreCase)) return false;
+            return assemblyIdentity.Version == FileVersion || assemblyIdentity.Version == ProductVersion;
+        }
+
+        public Assembly Load(ModuleDescriptor module)
+        {
+            return Assembly.LoadFile(CodeBase);
+        }
+
         private static System.Version ParseVersion(string version)
         {
             if (string.IsNullOrEmpty(version)) return null;

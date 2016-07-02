@@ -8,6 +8,7 @@ namespace Wheatech.Modulize
     public sealed class FeatureDescriptor
     {
         private DependencyDescriptorCollection _dependencies;
+
         public string FeatureId { get; internal set; }
 
         public string FeatureName { get; internal set; }
@@ -16,11 +17,13 @@ namespace Wheatech.Modulize
 
         public string Category { get; internal set; }
 
+        public bool RequiresEnable => FeatureManager != null && FeatureManager.RequiresEnable;
+
         public FeatureRuntimeState RuntimeState { get; internal set; }
 
         public FeatureManageState ManageState { get; internal set; }
 
-        //public IFeatureManager FeatureManager { get; internal set; }
+        internal FeatureManager FeatureManager { get; set; }
 
         public AssemblyIdentity EntryAssembly { get; internal set; }
 

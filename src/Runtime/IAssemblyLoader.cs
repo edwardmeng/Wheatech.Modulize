@@ -11,5 +11,9 @@ namespace Wheatech.Modulize
         bool TryInitiatedLoad(ModuleDescriptor module, out Assembly assembly);
 
         AssemblyIdentity CreateIdentity();
+
+        bool Match(AssemblyIdentity assemblyIdentity);
+
+        Assembly Load(ModuleDescriptor module);
     }
 }

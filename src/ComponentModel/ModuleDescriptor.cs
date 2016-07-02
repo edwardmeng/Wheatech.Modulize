@@ -60,11 +60,13 @@ namespace Wheatech.Modulize
 
         public string ModulePath { get; internal set; }
 
+        public bool RequiresInstall => ModuleManager != null && ModuleManager.RequiresInstall;
+
         public ModuleRuntimeState RuntimeState { get; internal set; }
 
         public ModuleManageState ManageState { get; internal set; }
 
-        //public IModuleManager ModuleManager { get; internal set; }
+        internal ModuleManager ModuleManager { get; set; }
 
         internal NameValueCollection Attributes { get; set; }
 

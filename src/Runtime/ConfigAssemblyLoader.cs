@@ -76,8 +76,8 @@ namespace Wheatech.Modulize
         private static bool TryParseCodeBase(XmlNode configNode, out CodeBaseInformation codebase)
         {
             codebase = null;
-            var versionText = GetAttribute(configNode,"version");
-            var location = GetAttribute(configNode,"href");
+            var versionText = GetAttribute(configNode, "version");
+            var location = GetAttribute(configNode, "href");
             if (string.IsNullOrEmpty(versionText) || string.IsNullOrEmpty(location)) return false;
             System.Version version;
             if (!System.Version.TryParse(versionText, out version)) return false;
@@ -92,8 +92,8 @@ namespace Wheatech.Modulize
         private static bool TryParseBindingRedirect(XmlNode configNode, out BindingRedirectInformation bindingRedirect)
         {
             bindingRedirect = null;
-            var oldVersionText = GetAttribute(configNode,"oldVersion");
-            var newVersionText = GetAttribute(configNode,"newVersion");
+            var oldVersionText = GetAttribute(configNode, "oldVersion");
+            var newVersionText = GetAttribute(configNode, "newVersion");
             if (string.IsNullOrEmpty(oldVersionText) || string.IsNullOrEmpty(newVersionText)) return false;
             IVersionComparator oldVersion;
             if (!VersionComparatorFactory.TryParse(oldVersionText, out oldVersion)) return false;
@@ -110,14 +110,14 @@ namespace Wheatech.Modulize
         private static bool TryParseAssemblyIdentity(XmlNode configNode, out AssemblyIdentity identity)
         {
             identity = null;
-            var name = GetAttribute(configNode,"name");
+            var name = GetAttribute(configNode, "name");
             if (string.IsNullOrEmpty(name)) return false;
             CultureInfo culture;
-            if (!Helper.TryParseCulture(GetAttribute(configNode,"culture"), out culture)) return false;
+            if (!Helper.TryParseCulture(GetAttribute(configNode, "culture"), out culture)) return false;
             byte[] publicKeyToken;
-            if (!TryParsepPublicKeyToken(GetAttribute(configNode,"publicKeyToken"), out publicKeyToken)) return false;
+            if (!TryParsepPublicKeyToken(GetAttribute(configNode, "publicKeyToken"), out publicKeyToken)) return false;
             ProcessorArchitecture architecture;
-            if (!TryParseArchitecture(GetAttribute(configNode,"processorArchitecture"), out architecture)) return false;
+            if (!TryParseArchitecture(GetAttribute(configNode, "processorArchitecture"), out architecture)) return false;
             identity = new AssemblyIdentity(name, null, culture, publicKeyToken, architecture);
             return true;
         }
@@ -152,6 +152,26 @@ namespace Wheatech.Modulize
         public AssemblyIdentity CreateIdentity()
         {
             return CodeBase == null ? Identity : new AssemblyIdentity(Identity.ShortName, CodeBase.Version, Identity.Culture, Identity.PublicKeyToken, Identity.Architecture);
+        }
+
+        public bool Match(AssemblyIdentity assemblyIdentity)
+        {
+            return CodeBase != null && Satisfies(assemblyIdentity) &&
+                   (assemblyIdentity.Version == null || (BindingRedirect?.OldVersion.Match(assemblyIdentity.Version) ?? CodeBase.Version == assemblyIdentity.Version));
+        }
+
+        public Assembly Load(ModuleDescriptor module)
+        {
+            var location = CodeBase.Location;
+            if (location.StartsWith("~/"))
+            {
+                location = Path.Combine(module.ShadowPath, location.Substring(2));
+            }
+            else if (!IsAbsolutePhysicalPath(location) && !IsUriPath(location))
+            {
+                location = Path.Combine(module.ShadowPath, location);
+            }
+            return Assembly.LoadFrom(location);
         }
 
         public bool TryRedirect(AssemblyIdentity identity, out AssemblyIdentity redirectedIdentity)
