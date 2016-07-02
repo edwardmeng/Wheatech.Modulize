@@ -93,7 +93,7 @@ namespace Wheatech.Modulize
 
         internal static IAssemblyLoader[] FindAssemblies(DirectoryInfo info)
         {
-            return FindConfigAssemblies(info).Union(FindFileAssemblies(info, null)).ToArray();
+            return FindConfigAssemblies(info).Union(FindFileAssemblies(info, null)).OrderByDescending(assembly => assembly.Priority).ToArray();
         }
 
         private static IEnumerable<IAssemblyLoader> FindConfigAssemblies(DirectoryInfo info)

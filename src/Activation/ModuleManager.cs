@@ -84,14 +84,16 @@ namespace Wheatech.Modulize
             assembly = null;
             foreach (var assemblyLoader in _module.Assemblies)
             {
-                if (assemblyLoader.Match(assemblyIdentity))
+                switch (assemblyLoader.Match(ref assemblyIdentity))
                 {
-                    assembly = LoadAssembly(assemblyLoader);
-                    if (!_loadedAssemblies.Contains(assembly))
-                    {
-                        _loadedAssemblies.Add(assembly);
-                    }
-                    return true;
+                    case AssemblyMatchResult.Success:
+                    case AssemblyMatchResult.RedirectAndMatch:
+                        assembly = LoadAssembly(assemblyLoader);
+                        if (!_loadedAssemblies.Contains(assembly))
+                        {
+                            _loadedAssemblies.Add(assembly);
+                        }
+                        return true;
                 }
             }
             return false;
@@ -111,41 +113,7 @@ namespace Wheatech.Modulize
 
         private Assembly LoadAssembly(IAssemblyLoader assemblyLoader)
         {
-            return GetDomainAssembly(assemblyLoader.CreateIdentity()) ?? assemblyLoader.Load(_module);
-        }
-
-        private bool MatchAssembly(Assembly assembly, AssemblyIdentity identity)
-        {
-            var assemblyIdentity = new AssemblyIdentity(assembly.FullName);
-            if (!identity.Equals(assemblyIdentity, AssemblyIdentityComparison.ShortName)) return false;
-            if (identity.Version != null && !Equals(assemblyIdentity.Version, identity.Version)) return false;
-            if (identity.Culture == null)
-            {
-                if (assemblyIdentity.Culture != null && !string.Equals(assemblyIdentity.CultureName, "neutral", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!string.Equals(assemblyIdentity.CultureName, identity.CultureName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-            if (identity.PublicKeyToken != null)
-            {
-                if (assemblyIdentity.PublicKeyToken == null) return false;
-                if (!identity.PublicKeyToken.SequenceEqual(assemblyIdentity.PublicKeyToken)) return false;
-            }
-            if (identity.Architecture == ProcessorArchitecture.None) return true;
-            var assemblyName = assembly.GetName();
-            return assemblyName.ProcessorArchitecture == ProcessorArchitecture.MSIL || assemblyName.ProcessorArchitecture == identity.Architecture;
-        }
-
-        private Assembly GetDomainAssembly(AssemblyIdentity assemblyIdentity)
-        {
-            return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => MatchAssembly(assembly, assemblyIdentity));
+            return ActivationHelper.GetDomainAssembly(assemblyLoader.CreateIdentity()) ?? assemblyLoader.Load(_module);
         }
 
         public void Startup()

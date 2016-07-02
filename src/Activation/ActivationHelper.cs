@@ -119,5 +119,79 @@ namespace Wheatech.Modulize
             }
             method.Invoke(method.IsStatic ? null : Activator.CreateInstance(method.DeclaringType), arguments.ToArray());
         }
+
+        private static bool MatchAssembly(Assembly assembly, AssemblyIdentity identity)
+        {
+            var assemblyIdentity = new AssemblyIdentity(assembly.FullName);
+            if (!identity.Equals(assemblyIdentity, AssemblyIdentityComparison.ShortName)) return false;
+            if (identity.Version != null && !Equals(assemblyIdentity.Version, identity.Version)) return false;
+            if (identity.Culture == null)
+            {
+                if (assemblyIdentity.Culture != null && !string.Equals(assemblyIdentity.CultureName, "neutral", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!string.Equals(assemblyIdentity.CultureName, identity.CultureName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+            if (identity.PublicKeyToken != null)
+            {
+                if (assemblyIdentity.PublicKeyToken == null) return false;
+                if (!identity.PublicKeyToken.SequenceEqual(assemblyIdentity.PublicKeyToken)) return false;
+            }
+            if (identity.Architecture == ProcessorArchitecture.None) return true;
+            var assemblyName = assembly.GetName();
+            return assemblyName.ProcessorArchitecture == ProcessorArchitecture.MSIL || assemblyName.ProcessorArchitecture == identity.Architecture;
+        }
+
+        public static Assembly GetDomainAssembly(AssemblyIdentity assemblyIdentity)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => MatchAssembly(assembly, assemblyIdentity));
+        }
+
+        public static Assembly LoadAssembly(ModuleDescriptor[] modules, string assemblyName)
+        {
+            // If the argument name contains directory seperator, indicates it is an physical path or uri path.
+            if (assemblyName.Contains('\\') || assemblyName.Contains('/'))
+            {
+                return Assembly.LoadFrom(PathUtils.ResolvePath(assemblyName));
+            }
+            AssemblyIdentity identity;
+            if (!AssemblyIdentity.TryParse(assemblyName, out identity))
+            {
+                return Assembly.LoadFrom(assemblyName);
+            }
+            var assembly = GetDomainAssembly(identity);
+            if (assembly != null) return assembly;
+            if (modules == null) return null;
+            foreach (var module in modules)
+            {
+                if (module.ModuleManager?.TryLoadAssembly(identity, out assembly) ?? false)
+                {
+                    return assembly;
+                }
+            }
+            return null;
+        }
+
+        public static void InitializeModules(ModuleDescriptor[] modules,IActivatingEnvironment environment)
+        {
+            // Load the assemblies in module configuration files or bin folder.
+            // At this time the reference assemblies will not be requested by the framework.
+            foreach (var module in modules)
+            {
+                module.ModuleManager?.LoadAssemblies();
+            }
+
+            foreach (var module in modules)
+            {
+                module.ModuleManager?.Initialize(environment);
+            }
+        }
     }
 }

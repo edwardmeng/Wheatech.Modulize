@@ -12,8 +12,10 @@ namespace Wheatech.Modulize
 
         AssemblyIdentity CreateIdentity();
 
-        bool Match(AssemblyIdentity assemblyIdentity);
+        AssemblyMatchResult Match(ref AssemblyIdentity assemblyIdentity);
 
         Assembly Load(ModuleDescriptor module);
+
+        int Priority { get; }
     }
 }

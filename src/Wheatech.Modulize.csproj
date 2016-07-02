@@ -66,6 +66,7 @@
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
     <Compile Include="Runtime\AssemblyExtensions.cs" />
+    <Compile Include="Runtime\AssemblyMatchResult.cs" />
     <Compile Include="Runtime\ConfigAssemblyLoader.cs" />
     <Compile Include="ComponentModel\DependencyDescriptor.cs" />
     <Compile Include="ComponentModel\DependencyDescriptorCollection.cs" />

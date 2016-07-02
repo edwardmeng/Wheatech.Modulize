@@ -9,6 +9,8 @@ namespace Wheatech.Modulize
 {
     public class ConfigAssemblyLoader : IAssemblyLoader
     {
+        #region Nest Types
+
         private class BindingRedirectInformation
         {
             public IVersionComparator OldVersion { get; set; }
@@ -23,11 +25,21 @@ namespace Wheatech.Modulize
             public string Location { get; set; }
         }
 
+        #endregion
+
+        #region Properties
+
         private AssemblyIdentity Identity { get; set; }
 
         private BindingRedirectInformation BindingRedirect { get; set; }
 
         private CodeBaseInformation CodeBase { get; set; }
+
+        public int Priority => CodeBase == null ? 10 : 9;
+
+        #endregion
+
+        #region Parse
 
         public static bool TryParse(XmlNode configNode, out ConfigAssemblyLoader assemblyInformation)
         {
@@ -122,6 +134,8 @@ namespace Wheatech.Modulize
             return true;
         }
 
+        #endregion
+
         private static string ResolveAssemblyLocation(ModuleDescriptor module, string location)
         {
             if (location.StartsWith("~/"))
@@ -151,17 +165,49 @@ namespace Wheatech.Modulize
 
         public AssemblyIdentity CreateIdentity()
         {
-            return CodeBase == null ? Identity : new AssemblyIdentity(Identity.ShortName, CodeBase.Version, Identity.Culture, Identity.PublicKeyToken, Identity.Architecture);
+            return new AssemblyIdentity(Identity.ShortName, CodeBase?.Version ?? BindingRedirect?.NewVersion, Identity.Culture, Identity.PublicKeyToken, Identity.Architecture);
         }
 
-        public bool Match(AssemblyIdentity assemblyIdentity)
+        public AssemblyMatchResult Match(ref AssemblyIdentity assemblyIdentity)
         {
-            return CodeBase != null && Satisfies(assemblyIdentity) &&
-                   (assemblyIdentity.Version == null || (BindingRedirect?.OldVersion.Match(assemblyIdentity.Version) ?? CodeBase.Version == assemblyIdentity.Version));
+            if (!AssemblyIdentityComparer.ShortName.Equals(Identity, assemblyIdentity))
+            {
+                return AssemblyMatchResult.Failed;
+            }
+            if (Identity.Culture != null && !string.Equals(Identity.CultureName, assemblyIdentity.CultureName, StringComparison.OrdinalIgnoreCase))
+            {
+                return AssemblyMatchResult.Failed;
+            }
+            if (Identity.PublicKeyToken != null && (assemblyIdentity.PublicKeyToken == null || !Identity.PublicKeyToken.SequenceEqual(assemblyIdentity.PublicKeyToken)))
+            {
+                return AssemblyMatchResult.Failed;
+            }
+            if (Identity.Architecture != ProcessorArchitecture.None && Identity.Architecture != assemblyIdentity.Architecture)
+            {
+                return AssemblyMatchResult.Failed;
+            }
+            if (assemblyIdentity.Version != null)
+            {
+                if (BindingRedirect != null && !BindingRedirect.OldVersion.Match(assemblyIdentity.Version))
+                {
+                    return AssemblyMatchResult.Failed;
+                }
+                if (CodeBase != null && CodeBase.Version != assemblyIdentity.Version)
+                {
+                    return AssemblyMatchResult.Failed;
+                }
+            }
+            if (BindingRedirect != null)
+            {
+                assemblyIdentity = new AssemblyIdentity(Identity.ShortName, BindingRedirect.NewVersion, Identity.Culture, Identity.PublicKeyToken, Identity.Architecture);
+                return CodeBase != null ? AssemblyMatchResult.RedirectAndMatch : AssemblyMatchResult.Redirect;
+            }
+            return CodeBase != null ? AssemblyMatchResult.Success : AssemblyMatchResult.Failed;
         }
 
         public Assembly Load(ModuleDescriptor module)
         {
+            if (CodeBase == null) return null;
             var location = CodeBase.Location;
             if (location.StartsWith("~/"))
             {
