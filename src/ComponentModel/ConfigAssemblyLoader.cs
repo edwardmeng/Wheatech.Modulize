@@ -126,13 +126,13 @@ namespace Wheatech.Modulize
         {
             if (location.StartsWith("~/"))
             {
-                return Path.Combine(module.ShadowPysicalPath, location.Substring(2));
+                return Path.Combine(module.ShadowPath, location.Substring(2));
             }
             if (IsAbsolutePhysicalPath(location) || IsUriPath(location))
             {
                 return location;
             }
-            return Path.Combine(module.ShadowPysicalPath, location);
+            return Path.Combine(module.ShadowPath, location);
         }
 
         private bool Satisfies(AssemblyIdentity identity)

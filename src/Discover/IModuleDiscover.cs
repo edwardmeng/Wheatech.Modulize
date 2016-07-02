@@ -4,6 +4,6 @@ namespace Wheatech.Modulize
 {
     public interface IModuleDiscover
     {
-        IEnumerable<ModuleDescriptor> Discover();
+        IEnumerable<ModuleDescriptor> Discover(DiscoverContext context);
     }
 }

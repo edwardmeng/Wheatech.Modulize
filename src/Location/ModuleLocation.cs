@@ -19,5 +19,10 @@
         /// Gets the strategy for the discover algorithms.
         /// </summary>
         public DiscoverStrategy DiscoverStrategy { get; set; }
+
+        /// <summary>
+        /// Gets a value to indicate whethear the shadow copy should be performed.
+        /// </summary>
+        public bool EnableShadow { get; set; }
     }
 }

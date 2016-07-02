@@ -46,6 +46,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="Wheatech">
       <HintPath>..\packages\Wheatech.1.0.0\lib\Wheatech.dll</HintPath>
@@ -72,23 +73,22 @@
     <Compile Include="Discover\AssemblyModuleDiscover.cs" />
     <Compile Include="Discover\CompressionModuleDiscover.cs" />
     <Compile Include="Discover\DirectoryModuleDiscover.cs" />
+    <Compile Include="Discover\DiscoverContext.cs" />
     <Compile Include="Discover\DiscoverStrategy.cs" />
     <Compile Include="Discover\IModuleDiscover.cs" />
-    <Compile Include="Discover\LocationModuleDiscover.cs" />
     <Compile Include="Discover\ModuleDiscoverCollection.cs" />
-    <Compile Include="Discover\XmlModuleDiscover.cs" />
     <Compile Include="IPersistStore.cs" />
     <Compile Include="Location\IModuleLocator.cs" />
     <Compile Include="Location\JsonModuleLocator.cs" />
     <Compile Include="Location\ModuleLocation.cs" />
     <Compile Include="Location\ModuleLocatorCollection.cs" />
     <Compile Include="Location\StaticModuleLocator.cs" />
-    <Compile Include="Location\TextModuleLocator.cs" />
     <Compile Include="Location\XmlModuleLocator.cs" />
     <Compile Include="Manifest\IManifestParser.cs" />
     <Compile Include="Manifest\JsonManifestParser.cs" />
     <Compile Include="Manifest\ManifestHelper.cs" />
     <Compile Include="Manifest\ManifestParseException.cs" />
+    <Compile Include="Manifest\ManifestTable.cs" />
     <Compile Include="Manifest\TextManifestParser.cs" />
     <Compile Include="Manifest\XmlManifestParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

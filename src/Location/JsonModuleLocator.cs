@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,31 +28,15 @@ namespace Wheatech.Modulize
                     content = content.Trim();
                     var json = (JToken)JsonConvert.DeserializeObject(content);
                     if (json == null) yield break;
-                    switch (json.Type)
+                    foreach (var location in ParseLocations(json, null))
                     {
-                        case JTokenType.Object:
-                            var obj = (JObject)json;
-                            foreach (var property in obj.Properties())
-                            {
-                                foreach (var location in ParseLocations(property.Value))
-                                {
-                                    location.ModuleType = property.Name;
-                                    yield return location;
-                                }
-                            }
-                            break;
-                        default:
-                            foreach (var location in ParseLocations(json))
-                            {
-                                yield return location;
-                            }
-                            break;
+                        yield return location;
                     }
                 }
             }
         }
 
-        private IEnumerable<ModuleLocation> ParseLocations(JToken token)
+        private IEnumerable<ModuleLocation> ParseLocations(JToken token, string moduleType, DiscoverStrategy? forceStrategy = null, bool enableShadow = false)
         {
             switch (token.Type)
             {
@@ -66,38 +51,48 @@ namespace Wheatech.Modulize
                     yield return new ModuleLocation
                     {
                         Location = Convert.ToString(((JValue)token).Value),
-                        DiscoverStrategy = DiscoverStrategy.Enumerate
+                        DiscoverStrategy = forceStrategy ?? DiscoverStrategy.Enumerate,
+                        ModuleType = moduleType,
+                        EnableShadow = enableShadow
                     };
                     break;
                 case JTokenType.Array:
-                    foreach (var location in ParseArray((JArray)token))
+                    foreach (var item in (JArray)token)
                     {
-                        yield return new ModuleLocation
+                        foreach (var location in ParseLocations(item, moduleType, DiscoverStrategy.Single, enableShadow))
                         {
-                            Location = location,
-                            DiscoverStrategy = DiscoverStrategy.Single
-                        };
+                            yield return location;
+                        }
+                    }
+                    break;
+                case JTokenType.Object:
+                    if (!string.IsNullOrEmpty(moduleType))
+                    {
+                        throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Strings.Locator_InvalidJsonToken, token.Type, LocatorFilePath));
+                    }
+                    var obj = (JObject)token;
+                    var modules = obj.Property("modules");
+                    if (modules != null)
+                    {
+                        var shadow = obj.Property("enableShadow")?.Value.Value<bool>() ?? enableShadow;
+                        foreach (var location in ParseLocations(modules.Value, null,enableShadow: shadow))
+                        {
+                            yield return location;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var property in obj.Properties())
+                        {
+                            foreach (var location in ParseLocations(property.Value, property.Name, enableShadow: enableShadow))
+                            {
+                                yield return location;
+                            }
+                        }
                     }
                     break;
                 default:
-                    throw new NotSupportedException(string.Format(Strings.Locator_InvalidJsonToken, token.Type, LocatorFilePath));
-            }
-        }
-
-        private IEnumerable<string> ParseArray(JArray array)
-        {
-            foreach (var token in array)
-            {
-                switch (token.Type)
-                {
-                    case JTokenType.String:
-                    case JTokenType.Uri:
-                    case JTokenType.Raw:
-                        yield return Convert.ToString(((JValue)token).Value);
-                        break;
-                    default:
-                        throw new NotSupportedException(string.Format(Strings.Locator_InvalidJsonToken, token.Type, LocatorFilePath));
-                }
+                    throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture, Strings.Locator_InvalidJsonToken, token.Type, LocatorFilePath));
             }
         }
     }

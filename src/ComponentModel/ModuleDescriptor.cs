@@ -56,13 +56,9 @@ namespace Wheatech.Modulize
 
         public string License { get; internal set; }
 
-        public string ShadowPysicalPath { get; internal set; }
+        public string ShadowPath { get; internal set; }
 
-        public string ShadowVirtualPath { get; internal set; }
-
-        public string ModulePysicalPath { get; internal set; }
-
-        public string ModuleVirtualPath { get; internal set; }
+        public string ModulePath { get; internal set; }
 
         public ModuleRuntimeState RuntimeState { get; internal set; }
 
@@ -84,6 +80,6 @@ namespace Wheatech.Modulize
         /// </summary>
         public FeatureDescriptorCollection Features { get; internal set; }
 
-        //public IAssemblyLoader[] Assemblies { get; internal set; }
+        public IAssemblyLoader[] Assemblies { get; internal set; }
     }
 }

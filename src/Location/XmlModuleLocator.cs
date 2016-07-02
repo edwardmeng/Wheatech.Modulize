@@ -17,19 +17,31 @@ namespace Wheatech.Modulize
             {
                 yield break;
             }
-            foreach (var location in ReadLocations(rootElement.ChildNodes, null))
+            foreach (var location in ReadLocations(rootElement.ChildNodes, null, GetEnableShadow(rootElement, false)))
             {
                 yield return location;
             }
         }
 
-        private IEnumerable<ModuleLocation> ReadLocations(IEnumerable nodes, string moduleType)
+        private bool GetEnableShadow(XmlNode node, bool defaultValue)
+        {
+            var shadowText = node.Attributes?.GetNamedItem("enableShadow")?.Value;
+            bool nodeShadow;
+            if (string.IsNullOrEmpty(shadowText) || !bool.TryParse(shadowText, out nodeShadow))
+            {
+                nodeShadow = defaultValue;
+            }
+            return nodeShadow;
+        }
+
+        private IEnumerable<ModuleLocation> ReadLocations(IEnumerable nodes, string moduleType, bool enableShadow)
         {
             if (nodes == null) yield break;
             foreach (XmlNode node in nodes)
             {
                 if (node.NodeType == XmlNodeType.Element)
                 {
+                    bool nodeShadow = GetEnableShadow(node, enableShadow);
                     switch (node.Name)
                     {
                         case "module":
@@ -40,24 +52,26 @@ namespace Wheatech.Modulize
                                 {
                                     Location = modulePath,
                                     DiscoverStrategy = DiscoverStrategy.Single,
-                                    ModuleType = moduleType
+                                    ModuleType = moduleType,
+                                    EnableShadow = nodeShadow
                                 };
                             }
                             break;
-                        case "directionary":
+                        case "directory":
                             var dirPath = node.Attributes?.GetNamedItem("path")?.Value;
                             if (!string.IsNullOrWhiteSpace(dirPath))
                             {
-                                yield return new ModuleLocation()
+                                yield return new ModuleLocation
                                 {
                                     Location = dirPath,
                                     DiscoverStrategy = DiscoverStrategy.Enumerate,
-                                    ModuleType = moduleType
+                                    ModuleType = moduleType,
+                                    EnableShadow = nodeShadow
                                 };
                             }
                             break;
                         default:
-                            foreach (var location in ReadLocations(node.ChildNodes, node.Name))
+                            foreach (var location in ReadLocations(node.ChildNodes, node.Name, nodeShadow))
                             {
                                 yield return location;
                             }

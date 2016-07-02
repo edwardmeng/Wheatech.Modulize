@@ -7,12 +7,14 @@ namespace Wheatech.Modulize
         private readonly string _moduleType;
         private readonly string _path;
         private readonly DiscoverStrategy _strategy;
+        private readonly bool _enableShadow;
 
-        public StaticModuleLocator(string moduleType, string path, DiscoverStrategy strategy)
+        public StaticModuleLocator(string moduleType, string path, DiscoverStrategy strategy, bool enableShadow)
         {
             _moduleType = moduleType;
             _path = path;
             _strategy = strategy;
+            _enableShadow = enableShadow;
         }
 
         public IEnumerable<ModuleLocation> GetLocations()
@@ -21,7 +23,8 @@ namespace Wheatech.Modulize
             {
                 ModuleType = _moduleType,
                 Location = PathUtils.ResolvePath(_path),
-                DiscoverStrategy = _strategy
+                DiscoverStrategy = _strategy,
+                EnableShadow = _enableShadow
             };
         }
     }
