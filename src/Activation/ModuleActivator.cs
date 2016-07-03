@@ -14,6 +14,7 @@ namespace Wheatech.Modulize
         private Tuple<Version, MethodInfo>[] _installMethods;
         private MethodInfo[] _uninstallMethods;
         private bool _installed;
+        private bool _refreshingState;
 
         internal void Initialize(IActivatingEnvironment environment)
         {
@@ -79,9 +80,12 @@ namespace Wheatech.Modulize
             }
         }
 
-        internal void AutoInstalled()
+        public ModuleRuntimeState RuntimeState { get; internal set; }
+
+        internal void AutoInstalled(IActivatingEnvironment environment)
         {
             _installed = true;
+            RefreshRuntimeState(environment);
         }
 
         internal void Install(IActivatingEnvironment environment)
@@ -94,15 +98,16 @@ namespace Wheatech.Modulize
                 }
             }
             _installed = true;
+            RefreshRuntimeState(environment);
         }
 
         internal void Upgrade(IActivatingEnvironment environment, Version installedVersion)
         {
-            if (_installMethods!=null)
+            if (_installMethods != null)
             {
                 foreach (var method in _installMethods)
                 {
-                    if (method.Item1>installedVersion)
+                    if (method.Item1 > installedVersion)
                     {
                         ActivationHelper.InvokeMethod(method.Item2, environment);
                     }
@@ -120,6 +125,7 @@ namespace Wheatech.Modulize
                 }
             }
             _installed = false;
+            RefreshRuntimeState(environment);
         }
 
         internal bool TryLoadAssembly(AssemblyIdentity assemblyIdentity, out Assembly assembly)
@@ -169,6 +175,33 @@ namespace Wheatech.Modulize
         internal Assembly[] GetLoadedAssemblies()
         {
             return _loadedAssemblies.ToArray();
+        }
+
+        internal void RefreshRuntimeState(IActivatingEnvironment environment)
+        {
+            if (_refreshingState) return;
+            _refreshingState = true;
+            if (HostVersion != null && !HostVersion.Match(environment.ApplicationVersion))
+            {
+                RuntimeState |= ModuleRuntimeState.IncompatibleHost;
+            }
+            else
+            {
+                RuntimeState &= ~ModuleRuntimeState.IncompatibleHost;
+            }
+            foreach (var feature in Features)
+            {
+                feature.RefreshRuntimeState(environment);
+            }
+            if (Features.All(feature => (feature.RuntimeState & ~FeatureRuntimeState.ForbiddenModule & ~FeatureRuntimeState.UninstallModule) != FeatureRuntimeState.None))
+            {
+                RuntimeState |= ModuleRuntimeState.ForbiddenFeatures;
+            }
+            else
+            {
+                RuntimeState &= ~ModuleRuntimeState.ForbiddenFeatures;
+            }
+            _refreshingState = false;
         }
     }
 }

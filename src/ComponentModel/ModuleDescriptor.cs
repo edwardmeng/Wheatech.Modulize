@@ -61,10 +61,6 @@
 
         public string ModulePath { get; internal set; }
 
-        public ModuleRuntimeState RuntimeState { get; internal set; }
-
-        public ModuleManageState ManageState { get; internal set; }
-
         /// <summary>
         /// Get all the features belong to the module.
         /// </summary>

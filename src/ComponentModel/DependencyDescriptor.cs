@@ -10,6 +10,8 @@ namespace Wheatech.Modulize
 
         public IVersionComparator Version { get; internal set; }
 
+        internal FeatureDescriptor Feature { get; set; }
+
         public static bool TryParse(string value, out DependencyDescriptor dependency)
         {
             dependency = null;

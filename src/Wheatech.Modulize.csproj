@@ -68,6 +68,8 @@
     <Compile Include="Activation\ModuleActivator.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
+    <Compile Include="IModuleContainer.cs" />
+    <Compile Include="ModuleContainer.cs" />
     <Compile Include="Runtime\AssemblyExtensions.cs" />
     <Compile Include="Runtime\AssemblyMatchResult.cs" />
     <Compile Include="Runtime\ConfigAssemblyLoader.cs" />
@@ -76,13 +78,11 @@
     <Compile Include="ComponentModel\DependentNode.cs" />
     <Compile Include="ComponentModel\FeatureDescriptor.cs" />
     <Compile Include="ComponentModel\FeatureDescriptorCollection.cs" />
-    <Compile Include="ComponentModel\FeatureManageState.cs" />
-    <Compile Include="ComponentModel\FeatureRuntimeState.cs" />
+    <Compile Include="Activation\FeatureRuntimeState.cs" />
     <Compile Include="Runtime\FileAssemblyLoader.cs" />
     <Compile Include="Runtime\IAssemblyLoader.cs" />
     <Compile Include="ComponentModel\ModuleDescriptor.cs" />
-    <Compile Include="ComponentModel\ModuleManageState.cs" />
-    <Compile Include="ComponentModel\ModuleRuntimeState.cs" />
+    <Compile Include="Activation\ModuleRuntimeState.cs" />
     <Compile Include="Discover\AssemblyModuleDiscover.cs" />
     <Compile Include="Discover\CompressionModuleDiscover.cs" />
     <Compile Include="Discover\DirectoryModuleDiscover.cs" />
@@ -90,7 +90,7 @@
     <Compile Include="Discover\DiscoverStrategy.cs" />
     <Compile Include="Discover\IModuleDiscover.cs" />
     <Compile Include="Discover\ModuleDiscoverCollection.cs" />
-    <Compile Include="Activation\IActivationStore.cs" />
+    <Compile Include="Activation\IActivationProvider.cs" />
     <Compile Include="Location\IModuleLocator.cs" />
     <Compile Include="Location\JsonModuleLocator.cs" />
     <Compile Include="Location\ModuleLocation.cs" />

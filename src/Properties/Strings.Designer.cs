@@ -205,6 +205,15 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The module container has not been started. 的本地化字符串。
+        /// </summary>
+        internal static string Container_NotStart {
+            get {
+                return ResourceManager.GetString("Container_NotStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Ambiguous assemblies have been found for the entry assembly of the feature {0}. 的本地化字符串。
         /// </summary>
         internal static string Discover_AmbiguousFeatureEntry {
