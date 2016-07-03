@@ -51,8 +51,8 @@
     <Reference Include="Wheatech">
       <HintPath>..\packages\Wheatech.1.0.0\lib\Wheatech.dll</HintPath>
     </Reference>
-    <Reference Include="Wheatech.Activation, Version=1.0.3.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
-      <HintPath>..\packages\Wheatech.Activation.1.0.3\lib\net461\Wheatech.Activation.dll</HintPath>
+    <Reference Include="Wheatech.Activation, Version=1.0.4.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
+      <HintPath>..\packages\Wheatech.Activation.1.0.4\lib\net461\Wheatech.Activation.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
