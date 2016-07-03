@@ -9,19 +9,23 @@ namespace Wheatech.Modulize
         {
             if (module.EntryAssembly != null)
             {
+                var assemblyIdentity = module.EntryAssembly;
                 IAssemblyLoader matchEntryAssembly = null;
                 foreach (var assembly in module.Assemblies)
                 {
-                    if (assembly.Match(module.EntryAssembly))
+                    switch (assembly.Match(ref assemblyIdentity))
                     {
-                        if (matchEntryAssembly == null)
-                        {
-                            matchEntryAssembly = assembly;
-                        }
-                        else
-                        {
-                            throw new ModuleDiscoverException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_AmbiguousModuleEntry, module.ModuleId));
-                        }
+                        case AssemblyMatchResult.Success:
+                        case AssemblyMatchResult.RedirectAndMatch:
+                            if (matchEntryAssembly == null)
+                            {
+                                matchEntryAssembly = assembly;
+                            }
+                            else
+                            {
+                                throw new ModuleDiscoverException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_AmbiguousModuleEntry, module.ModuleId));
+                            }
+                            break;
                     }
                 }
                 if (matchEntryAssembly == null)
@@ -40,18 +44,22 @@ namespace Wheatech.Modulize
             if (feature.EntryAssembly != null)
             {
                 IAssemblyLoader matchEntryAssembly = null;
+                var assemblyIdentity = feature.EntryAssembly;
                 foreach (var assembly in feature.Module.Assemblies)
                 {
-                    if (assembly.Match(feature.EntryAssembly))
+                    switch (assembly.Match(ref assemblyIdentity))
                     {
-                        if (matchEntryAssembly == null)
-                        {
-                            matchEntryAssembly = assembly;
-                        }
-                        else
-                        {
-                            throw new ModuleDiscoverException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_AmbiguousFeatureEntry, feature.FeatureId));
-                        }
+                        case AssemblyMatchResult.Success:
+                        case AssemblyMatchResult.RedirectAndMatch:
+                            if (matchEntryAssembly == null)
+                            {
+                                matchEntryAssembly = assembly;
+                            }
+                            else
+                            {
+                                throw new ModuleDiscoverException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_AmbiguousFeatureEntry, feature.FeatureId));
+                            }
+                            break;
                     }
                 }
                 if (matchEntryAssembly == null)

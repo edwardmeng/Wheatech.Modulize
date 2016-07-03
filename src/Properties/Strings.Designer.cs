@@ -97,6 +97,24 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The entry assembly of the feature {1} cannot be loaded: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotLoadFeatureEntry {
+            get {
+                return ResourceManager.GetString("Activation_CannotLoadFeatureEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The entry assembly of the module {1} cannot be loaded: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotLoadModuleEntry {
+            get {
+                return ResourceManager.GetString("Activation_CannotLoadModuleEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 There are multiple public method {0} have been found in the type {1}. The application cannot determine which one should be used to invoke. 的本地化字符串。
         /// </summary>
         internal static string Activation_CannotMultipleMethod {

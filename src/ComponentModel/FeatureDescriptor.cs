@@ -1,6 +1,4 @@
-﻿using System.Collections.Specialized;
-
-namespace Wheatech.Modulize
+﻿namespace Wheatech.Modulize
 {
     /// <summary>
     /// The descriptor of features.
@@ -34,14 +32,5 @@ namespace Wheatech.Modulize
         }
 
         public ModuleDescriptor Module { get; internal set; }
-
-        internal NameValueCollection Attributes { get; set; }
-
-        /// <summary>
-        /// Gets the attribute value of the feature using the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns>The attribute value. If the attribute does not exist, returns null.</returns>
-        public string this[string key] => Attributes?[key];
     }
 }

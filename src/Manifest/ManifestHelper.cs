@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using Wheatech.Modulize.Properties;
@@ -151,7 +150,6 @@ namespace Wheatech.Modulize
                 WebSite = website
             };
             module.Features = ParseFeatures(properties, module);
-            module.Attributes = ParseAttributes(properties);
             return module;
         }
 
@@ -214,7 +212,6 @@ namespace Wheatech.Modulize
             var entryAssembly = ParseFeatureEntryAssembly(properties, module.ModuleId);
             var dependencies = new DependencyDescriptorCollection(ParseDependencies(properties, module.ModuleId));
             dependencies.SetReadOnly();
-            var attributes = ParseAttributes(properties);
             return new FeatureDescriptor
             {
                 FeatureId = featureId,
@@ -222,7 +219,6 @@ namespace Wheatech.Modulize
                 Description = description,
                 Category = category,
                 Dependencies = dependencies,
-                Attributes = attributes,
                 Module = module,
                 EntryAssembly = entryAssembly
             };
@@ -245,7 +241,6 @@ namespace Wheatech.Modulize
             var entryAssembly = ParseFeatureEntryAssembly(properties, module.ModuleId);
             var dependencies = new DependencyDescriptorCollection(ParseDependencies(properties, module.ModuleId));
             dependencies.SetReadOnly();
-            var attributes = ParseAttributes(properties);
             return new FeatureDescriptor
             {
                 FeatureId = featureId,
@@ -253,7 +248,6 @@ namespace Wheatech.Modulize
                 Description = description,
                 Category = category,
                 Dependencies = dependencies,
-                Attributes = attributes,
                 Module = module,
                 EntryAssembly = entryAssembly ?? module.EntryAssembly
             };
@@ -281,7 +275,6 @@ namespace Wheatech.Modulize
                 Description = description,
                 Category = category,
                 Dependencies = dependencies,
-                Attributes = new NameValueCollection(),
                 Module = module,
                 EntryAssembly = entryAssembly ?? module.EntryAssembly
             };
@@ -449,19 +442,6 @@ namespace Wheatech.Modulize
                 }
             }
             return null;
-        }
-
-        private static NameValueCollection ParseAttributes(IDictionary<string, object> properties)
-        {
-            var attributes = new NameValueCollection(StringComparer.OrdinalIgnoreCase);
-            foreach (var property in properties)
-            {
-                if (!(property.Value is IDictionary<string, object>) && property.Value != null)
-                {
-                    attributes.Add(property.Key, Convert.ToString(property.Value));
-                }
-            }
-            return attributes;
         }
 
         #endregion

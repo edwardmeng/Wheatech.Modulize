@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Wheatech.Activation;
+using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
 {
@@ -12,6 +14,7 @@ namespace Wheatech.Modulize
         private readonly List<Assembly> _loadedAssemblies = new List<Assembly>();
         private MethodInfo[] _installMethods;
         private MethodInfo[] _uninstallMethods;
+
         public ModuleManager(ModuleDescriptor module)
         {
             _module = module;
@@ -24,35 +27,45 @@ namespace Wheatech.Modulize
                 Assembly entryAssembly;
                 if (TryLoadAssembly(_module.EntryAssembly, out entryAssembly))
                 {
-                    var installerTypes = ActivationHelper.FindTypes<IModuleInstaller>(entryAssembly).ToArray();
-                    var installMethods = new List<Tuple<Version, MethodInfo>>();
-                    var uninstallMethods = new List<Tuple<Version, MethodInfo>>();
-                    foreach (var installerType in installerTypes)
-                    {
-                        var installMethod = ActivationHelper.FindMethod(installerType, "Install", environment);
-                        var uninstallMethod = ActivationHelper.FindMethod(installerType, "Uninstall", environment);
-                        if (installMethod != null || uninstallMethod != null)
-                        {
-                            var version = ((IModuleInstaller)Activator.CreateInstance(installerType)).Version;
-                            if (installMethod != null)
-                            {
-                                installMethods.Add(Tuple.Create(version, installMethod));
-                            }
-                            if (uninstallMethod != null)
-                            {
-                                uninstallMethods.Add(Tuple.Create(version, uninstallMethod));
-                            }
-                        }
-                    }
-                    _installMethods = (from method in installMethods
-                                       orderby method.Item1
-                                       select method.Item2).ToArray();
-
-                    _uninstallMethods = (from method in uninstallMethods
-                                         orderby method.Item1 descending
-                                         select method.Item2).ToArray();
+                    LookupMethods(ActivationHelper.FindTypes<IModuleInstaller>(entryAssembly), environment);
+                }
+                else
+                {
+                    throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotLoadModuleEntry, _module.EntryAssembly, _module.ModuleId));
                 }
             }
+        }
+
+        private void LookupMethods(IEnumerable<Type> installerTypes, IActivatingEnvironment environment)
+        {
+            var installMethods = new List<Tuple<Version, MethodInfo>>();
+            var uninstallMethods = new List<Tuple<Version, MethodInfo>>();
+            foreach (var installerType in installerTypes)
+            {
+                var installMethod = ActivationHelper.FindMethod(installerType, "Install", environment);
+                var uninstallMethod = ActivationHelper.FindMethod(installerType, "Uninstall", environment);
+                if (installMethod != null || uninstallMethod != null)
+                {
+                    var version = ((IModuleInstaller)Activator.CreateInstance(installerType)).Version;
+                    if (installMethod != null)
+                    {
+                        installMethods.Add(Tuple.Create(version, installMethod));
+                    }
+                    if (uninstallMethod != null)
+                    {
+                        uninstallMethods.Add(Tuple.Create(version, uninstallMethod));
+                    }
+                }
+            }
+            _installMethods = (from method in installMethods
+                               where method.Item1 <= _module.ModuleVersion
+                               orderby method.Item1
+                               select method.Item2).ToArray();
+
+            _uninstallMethods = (from method in uninstallMethods
+                                 where method.Item1 <= _module.ModuleVersion
+                                 orderby method.Item1 descending
+                                 select method.Item2).ToArray();
         }
 
         public bool RequiresInstall => (_installMethods != null && _installMethods.Length > 0) || (_uninstallMethods != null && _uninstallMethods.Length > 0);
@@ -113,7 +126,9 @@ namespace Wheatech.Modulize
 
         private Assembly LoadAssembly(IAssemblyLoader assemblyLoader)
         {
-            return ActivationHelper.GetDomainAssembly(assemblyLoader.CreateIdentity()) ?? assemblyLoader.Load(_module);
+            var assemblyIdentity = assemblyLoader.CreateIdentity();
+            return _loadedAssemblies.FirstOrDefault(assembly => ActivationHelper.MatchAssembly(assembly, assemblyIdentity)) ??
+                   ActivationHelper.GetDomainAssembly(assemblyIdentity) ?? assemblyLoader.Load(_module);
         }
 
         public void Startup()

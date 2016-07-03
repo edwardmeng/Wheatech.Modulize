@@ -129,6 +129,12 @@
   <data name="Activation_CannotGenericMethod" xml:space="preserve">
     <value>The method {0} in the type {1} cannot be generic.</value>
   </data>
+  <data name="Activation_CannotLoadFeatureEntry" xml:space="preserve">
+    <value>The entry assembly of the feature {1} cannot be loaded: {0}.</value>
+  </data>
+  <data name="Activation_CannotLoadModuleEntry" xml:space="preserve">
+    <value>The entry assembly of the module {1} cannot be loaded: {0}.</value>
+  </data>
   <data name="Activation_CannotMultipleMethod" xml:space="preserve">
     <value>There are multiple public method {0} have been found in the type {1}. The application cannot determine which one should be used to invoke.</value>
   </data>

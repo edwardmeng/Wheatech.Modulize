@@ -13,6 +13,7 @@ namespace Wheatech.Modulize
         private readonly FeatureDescriptor _feature;
         private MethodInfo _enableMethod;
         private MethodInfo _disableMethod;
+
         public FeatureManager(FeatureDescriptor feature)
         {
             _feature = feature;
@@ -20,17 +21,25 @@ namespace Wheatech.Modulize
 
         public void Initialize(IActivatingEnvironment environment)
         {
+            Assembly entryAssembly = null;
             if (_feature.EntryAssembly != null)
             {
-                Assembly entryAssembly;
-                if (_feature.Module.ModuleManager.TryLoadAssembly(_feature.EntryAssembly, out entryAssembly))
+                if (!_feature.Module.ModuleManager.TryLoadAssembly(_feature.EntryAssembly, out entryAssembly))
                 {
-                    var activatorType = FindActivatorType(entryAssembly);
-                    if (activatorType != null)
-                    {
-                        _enableMethod = ActivationHelper.FindMethod(activatorType, "Enable", environment);
-                        _disableMethod = ActivationHelper.FindMethod(activatorType, "Disable", environment);
-                    }
+                    throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotLoadFeatureEntry, _feature.EntryAssembly, _feature.FeatureId));
+                }
+            }
+            else if (_feature.Module.EntryAssembly!=null)
+            {
+                _feature.Module.ModuleManager.TryLoadAssembly(_feature.Module.EntryAssembly, out entryAssembly);
+            }
+            if (entryAssembly != null)
+            {
+                var activatorType = FindActivatorType(entryAssembly);
+                if (activatorType != null)
+                {
+                    _enableMethod = ActivationHelper.FindMethod(activatorType, "Enable", environment);
+                    _disableMethod = ActivationHelper.FindMethod(activatorType, "Disable", environment);
                 }
             }
         }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace Wheatech.Modulize
@@ -75,15 +73,6 @@ namespace Wheatech.Modulize
             var assemblyIdentity = assemblyInformation.CreateIdentity();
             var productName = string.IsNullOrEmpty(assemblyInformation.ProductName) ? assemblyIdentity.ShortName : assemblyInformation.ProductName;
             var description = string.IsNullOrEmpty(assemblyInformation.Description) ? assemblyInformation.Comments : assemblyInformation.Description;
-            var attributes = new NameValueCollection(StringComparer.OrdinalIgnoreCase);
-            if (!string.IsNullOrEmpty(assemblyInformation.Trademarks))
-            {
-                attributes.Add("Trademarks", assemblyInformation.Trademarks);
-            }
-            if (!string.IsNullOrEmpty(assemblyInformation.Copyright))
-            {
-                attributes.Add("Copyright", assemblyInformation.Copyright);
-            }
             var module = new ModuleDescriptor
             {
                 ModuleId = assemblyIdentity.ShortName,
@@ -92,7 +81,6 @@ namespace Wheatech.Modulize
                 ModuleVersion = new Version((assemblyInformation.FileVersion ?? assemblyInformation.ProductVersion) +
                                             (string.IsNullOrEmpty(assemblyInformation.SpecialBuild) ? null : "+" + assemblyInformation.SpecialBuild)),
                 Authors = string.IsNullOrEmpty(assemblyInformation.CompanyName) ? null : new[] { assemblyInformation.CompanyName },
-                Attributes = attributes,
                 EntryAssembly = assemblyIdentity
             };
             var feature = new FeatureDescriptor

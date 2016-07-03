@@ -1,6 +1,4 @@
-﻿using System.Collections.Specialized;
-
-namespace Wheatech.Modulize
+﻿namespace Wheatech.Modulize
 {
     /// <summary>
     /// The descriptor of module.
@@ -67,15 +65,6 @@ namespace Wheatech.Modulize
         public ModuleManageState ManageState { get; internal set; }
 
         internal ModuleManager ModuleManager { get; set; }
-
-        internal NameValueCollection Attributes { get; set; }
-
-        /// <summary>
-        /// Gets the attribute value of the module using the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns>The attribute value. If the attribute does not exist, returns null.</returns>
-        public string this[string key] => Attributes?[key];
 
         /// <summary>
         /// Get all the features belong to the module.

@@ -120,7 +120,7 @@ namespace Wheatech.Modulize
             method.Invoke(method.IsStatic ? null : Activator.CreateInstance(method.DeclaringType), arguments.ToArray());
         }
 
-        private static bool MatchAssembly(Assembly assembly, AssemblyIdentity identity)
+        public static bool MatchAssembly(Assembly assembly, AssemblyIdentity identity)
         {
             var assemblyIdentity = new AssemblyIdentity(assembly.FullName);
             if (!identity.Equals(assemblyIdentity, AssemblyIdentityComparison.ShortName)) return false;
