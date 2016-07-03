@@ -51,18 +51,21 @@
     <Reference Include="Wheatech">
       <HintPath>..\packages\Wheatech.1.0.0\lib\Wheatech.dll</HintPath>
     </Reference>
-    <Reference Include="Wheatech.Activation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
-      <HintPath>..\packages\Wheatech.Activation.1.0.1\lib\net461\Wheatech.Activation.dll</HintPath>
+    <Reference Include="Wheatech.Activation, Version=1.0.3.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
+      <HintPath>..\packages\Wheatech.Activation.1.0.3\lib\net461\Wheatech.Activation.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHelper.cs" />
-    <Compile Include="Activation\FeatureManager.cs" />
-    <Compile Include="Activation\IFeatureActivator.cs" />
-    <Compile Include="Activation\IModuleInstaller.cs" />
+    <Compile Include="Activation\DependencyResolver.cs" />
+    <Compile Include="Activation\FeatureActivationState.cs" />
+    <Compile Include="Activation\FeatureActivatorAttribute.cs" />
+    <Compile Include="Activation\FeatureActivator.cs" />
     <Compile Include="Activation\ModuleActivationException.cs" />
-    <Compile Include="Activation\ModuleManager.cs" />
+    <Compile Include="Activation\ModuleActivationState.cs" />
+    <Compile Include="Activation\ModuleInstallerAttribute.cs" />
+    <Compile Include="Activation\ModuleActivator.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
     <Compile Include="Runtime\AssemblyExtensions.cs" />
@@ -87,7 +90,7 @@
     <Compile Include="Discover\DiscoverStrategy.cs" />
     <Compile Include="Discover\IModuleDiscover.cs" />
     <Compile Include="Discover\ModuleDiscoverCollection.cs" />
-    <Compile Include="IPersistStore.cs" />
+    <Compile Include="Activation\IActivationStore.cs" />
     <Compile Include="Location\IModuleLocator.cs" />
     <Compile Include="Location\JsonModuleLocator.cs" />
     <Compile Include="Location\ModuleLocation.cs" />

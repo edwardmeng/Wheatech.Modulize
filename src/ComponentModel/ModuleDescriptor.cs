@@ -3,7 +3,7 @@
     /// <summary>
     /// The descriptor of module.
     /// </summary>
-    public class ModuleDescriptor
+    public sealed partial class ModuleDescriptor
     {
         /// <summary>
         /// The identity of the module.
@@ -52,19 +52,18 @@
         /// </summary>
         public string WebSite { get; internal set; }
 
+        /// <summary>
+        /// Gets the license.
+        /// </summary>
         public string License { get; internal set; }
 
         public string ShadowPath { get; internal set; }
 
         public string ModulePath { get; internal set; }
 
-        public bool RequiresInstall => ModuleManager != null && ModuleManager.RequiresInstall;
-
         public ModuleRuntimeState RuntimeState { get; internal set; }
 
         public ModuleManageState ManageState { get; internal set; }
-
-        internal ModuleManager ModuleManager { get; set; }
 
         /// <summary>
         /// Get all the features belong to the module.

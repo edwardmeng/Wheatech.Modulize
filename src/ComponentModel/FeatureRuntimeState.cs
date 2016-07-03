@@ -22,10 +22,7 @@ namespace Wheatech.Modulize
         /// 存在禁用的依赖组件
         /// </summary>
         ForbiddenDependency = 0x08,
-        /// <summary>
-        /// 反射加载程序集失败
-        /// </summary>
-        ReflectionFailed = 0x10,
+        DisabledDependency = 0x10,
         /// <summary>
         /// Module尚未安装
         /// </summary>

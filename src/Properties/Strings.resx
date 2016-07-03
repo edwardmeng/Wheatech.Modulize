@@ -138,6 +138,15 @@
   <data name="Activation_CannotMultipleMethod" xml:space="preserve">
     <value>There are multiple public method {0} have been found in the type {1}. The application cannot determine which one should be used to invoke.</value>
   </data>
+  <data name="Activation_CircleDependency" xml:space="preserve">
+    <value>The circle dependency has been detected for the features: {0}.</value>
+  </data>
+  <data name="Activation_DuplicateFeatures" xml:space="preserve">
+    <value>There are multiple features with the same ID: {0}.</value>
+  </data>
+  <data name="Activation_DuplicateModules" xml:space="preserve">
+    <value>There are multiple modules with the same ID: {0}.</value>
+  </data>
   <data name="Activation_InvalidParameter" xml:space="preserve">
     <value>The parameter {0} of the method {1} declared in the type {2} cannot be out or ref.</value>
   </data>

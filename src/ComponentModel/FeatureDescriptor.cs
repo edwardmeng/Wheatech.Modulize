@@ -3,7 +3,7 @@
     /// <summary>
     /// The descriptor of features.
     /// </summary>
-    public sealed class FeatureDescriptor
+    public sealed partial class FeatureDescriptor
     {
         private DependencyDescriptorCollection _dependencies;
 
@@ -15,13 +15,9 @@
 
         public string Category { get; internal set; }
 
-        public bool RequiresEnable => FeatureManager != null && FeatureManager.RequiresEnable;
-
         public FeatureRuntimeState RuntimeState { get; internal set; }
 
         public FeatureManageState ManageState { get; internal set; }
-
-        internal FeatureManager FeatureManager { get; set; }
 
         public AssemblyIdentity EntryAssembly { get; internal set; }
 

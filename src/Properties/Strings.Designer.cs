@@ -124,6 +124,33 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The circle dependency has been detected for the features: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CircleDependency {
+            get {
+                return ResourceManager.GetString("Activation_CircleDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 There are multiple features with the same ID: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_DuplicateFeatures {
+            get {
+                return ResourceManager.GetString("Activation_DuplicateFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 There are multiple modules with the same ID: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_DuplicateModules {
+            get {
+                return ResourceManager.GetString("Activation_DuplicateModules", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The parameter {0} of the method {1} declared in the type {2} cannot be out or ref. 的本地化字符串。
         /// </summary>
         internal static string Activation_InvalidParameter {
