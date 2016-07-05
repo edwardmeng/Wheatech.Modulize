@@ -8,124 +8,223 @@ using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
 {
-    public class ModuleContainer : IModuleContainer
+    public class ModuleContainer : IModuleContainer, IDisposable
     {
         #region Fields
 
+        private ModuleConfiguration _configuration;
         private ModuleDescriptor[] _modules;
         private FeatureDescriptor[] _features;
-        private ModuleDiscoverCollection _discovers;
-        private ModuleLocatorCollection _locators;
-        private ManifestTable _manifests;
         private IActivatingEnvironment _environment;
+        private bool _disposed;
 
         #endregion
 
+        /// <summary>
+        /// Initialize new instance of <see cref="ModuleContainer"/>.
+        /// </summary>
         public ModuleContainer()
         {
-            Discovers.Add(new AssemblyModuleDiscover());
-            Discovers.Add(new CompressionModuleDiscover());
-            Discovers.Add(new DirectoryModuleDiscover());
+            _configuration = new ModuleConfiguration();
+            _configuration.Discovers.Add(new AssemblyModuleDiscover());
+            _configuration.Discovers.Add(new CompressionModuleDiscover());
+            _configuration.Discovers.Add(new DirectoryModuleDiscover());
 
-            Locators.Add(new JsonModuleLocator());
-            Locators.Add(new XmlModuleLocator());
+            _configuration.Locators.Add(new JsonModuleLocator());
+            _configuration.Locators.Add(new XmlModuleLocator());
 
-            Manifests.SetParser<JsonManifestParser>("manifest.json");
-            Manifests.SetParser<XmlManifestParser>("manifest.config");
-            Manifests.SetParser<TextManifestParser>("manifest.txt");
+            _configuration.Manifests.SetParser<JsonManifestParser>("manifest.json");
+            _configuration.Manifests.SetParser<XmlManifestParser>("manifest.config");
+            _configuration.Manifests.SetParser<TextManifestParser>("manifest.txt");
         }
 
-        public ModuleDiscoverCollection Discovers => _discovers ?? (_discovers = new ModuleDiscoverCollection());
+        /// <summary>
+        /// Gets an instance of <see cref="IModuleConfiguration"/> used to configure the module container.
+        /// </summary>
+        /// <returns>An instance of <see cref="IModuleConfiguration"/> to configure the module container.</returns>
+        /// <exception cref="InvalidOperationException">The container has been started.</exception>
+        public IModuleConfiguration Configure()
+        {
+            ValidateDisposed();
+            if (_environment == null)
+            {
+                throw new InvalidOperationException(Strings.Container_Started);
+            }
+            return _configuration;
+        }
 
-        public ModuleLocatorCollection Locators => _locators ?? (_locators = new ModuleLocatorCollection());
-
-        public ManifestTable Manifests => _manifests ?? (_manifests = new ManifestTable());
-
-        public IActivationProvider ActivationProvider { get; set; }
-
+        /// <summary>
+        /// Gets all the discovered modules.
+        /// </summary>
+        /// <returns>All the discovered modules.</returns>
+        /// <exception cref="InvalidOperationException">The container has not been started.</exception>
         public ModuleDescriptor[] GetModules()
         {
-            ValidateStartup();
+            ValidateDisposed();
+            ValidateStarted();
             return _modules;
         }
 
+        /// <summary>
+        /// Gets all the discovered features.
+        /// </summary>
+        /// <returns>All the discovered features.</returns>
+        /// <exception cref="InvalidOperationException">The container has not been started.</exception>
         public FeatureDescriptor[] GetFeatures()
         {
-            ValidateStartup();
+            ValidateDisposed();
+            ValidateStarted();
             return _features;
         }
 
-        public void InstallModules(params string[] modules)
+        /// <summary>
+        /// Installs modules by using an <see cref="IEnumerable{T}"/> of module IDs.
+        /// </summary>
+        /// <param name="modules">The module IDs of the modules to be installed.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="modules"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The container has not been started.</exception>
+        public void InstallModules(IEnumerable<string> modules)
         {
-            ValidateStartup();
-            var moduleDescriptors = _modules.Where(module => modules.Contains(module.ModuleId)).ToArray();
+            ValidateDisposed();
+            ValidateStarted();
+            if (modules == null)
+            {
+                throw new ArgumentNullException(nameof(modules));
+            }
+            var moduleIds = modules.ToArray();
+            var moduleDescriptors = _modules.Where(module => moduleIds.Contains(module.ModuleId)).ToArray();
             foreach (var moduleDescriptor in moduleDescriptors)
             {
                 if (moduleDescriptor.RuntimeState == ModuleRuntimeState.None && moduleDescriptor.ActivationState == ModuleActivationState.RequireInstall)
                 {
                     moduleDescriptor.Install(_environment);
-                    ActivationProvider.InstallModule(moduleDescriptor.ModuleId, moduleDescriptor.ModuleVersion);
+                    _configuration.PersistProvider.InstallModule(moduleDescriptor.ModuleId, moduleDescriptor.ModuleVersion);
                 }
             }
             StartupModules(moduleDescriptors);
         }
 
-        public void UninstallModules(params string[] modules)
+        /// <summary>
+        /// Uninstalls modules by using an <see cref="IEnumerable{T}"/> of module IDs.
+        /// </summary>
+        /// <param name="modules">The module IDs of the modules to be uninstalled.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="modules"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The container has not been started.</exception>
+        public void UninstallModules(IEnumerable<string> modules)
         {
-            ValidateStartup();
-            var moduleDescriptors = _modules.Where(module => modules.Contains(module.ModuleId)).Reverse().ToArray();
+            ValidateDisposed();
+            ValidateStarted();
+            if (modules == null)
+            {
+                throw new ArgumentNullException(nameof(modules));
+            }
+            var moduleIds = modules.ToArray();
+            var moduleDescriptors = _modules.Where(module => moduleIds.Contains(module.ModuleId)).Reverse().ToArray();
             foreach (var moduleDescriptor in moduleDescriptors)
             {
                 if (moduleDescriptor.RuntimeState == ModuleRuntimeState.None && moduleDescriptor.ActivationState == ModuleActivationState.Installed)
                 {
                     moduleDescriptor.Uninstall(_environment);
-                    ActivationProvider.UninstallModule(moduleDescriptor.ModuleId);
+                    _configuration.PersistProvider.UninstallModule(moduleDescriptor.ModuleId);
                 }
             }
             ShutdownModules(moduleDescriptors);
         }
 
-        public void EnableFeatures(params string[] features)
+        /// <summary>
+        /// Enables features by using an <see cref="IEnumerable{T}"/> of feature IDs.
+        /// </summary>
+        /// <param name="features">The feature IDs of the feature to be enabled.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="features"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The container has not been started.</exception>
+        public void EnableFeatures(IEnumerable<string> features)
         {
-            ValidateStartup();
-            var featureDescriptors = _features.Where(feature => features.Contains(feature.FeatureId)).ToArray();
+            ValidateDisposed();
+            ValidateStarted();
+            if (features == null)
+            {
+                throw new ArgumentNullException(nameof(features));
+            }
+            var featureIds = features.ToArray();
+            var featureDescriptors = _features.Where(feature => featureIds.Contains(feature.FeatureId)).ToArray();
             foreach (var featureDescriptor in featureDescriptors)
             {
                 if (featureDescriptor.RuntimeState == FeatureRuntimeState.None && featureDescriptor.ActivationState == FeatureActivationState.RequireEnable)
                 {
                     featureDescriptor.Enable(_environment);
-                    ActivationProvider.EnableFeature(featureDescriptor.FeatureId);
+                    _configuration.PersistProvider.EnableFeature(featureDescriptor.FeatureId);
                 }
             }
         }
 
-        public void DisableFeatures(params string[] features)
+        /// <summary>
+        /// Disables features by using an <see cref="IEnumerable{T}"/> of feature IDs.
+        /// </summary>
+        /// <param name="features">The feature IDs of the feature to be disabled.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="features"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The container has not been started.</exception>
+        public void DisableFeatures(IEnumerable<string> features)
         {
-            ValidateStartup();
-            var featureDescriptors = _features.Where(feature => features.Contains(feature.FeatureId)).Reverse().ToArray();
+            ValidateDisposed();
+            ValidateStarted();
+            if (features == null)
+            {
+                throw new ArgumentNullException(nameof(features));
+            }
+            var featureIds = features.ToArray();
+            var featureDescriptors = _features.Where(feature => featureIds.Contains(feature.FeatureId)).Reverse().ToArray();
             foreach (var featureDescriptor in featureDescriptors)
             {
                 if (featureDescriptor.RuntimeState == FeatureRuntimeState.None && featureDescriptor.ActivationState == FeatureActivationState.Enabled)
                 {
                     featureDescriptor.Disable(_environment);
-                    ActivationProvider.DisableFeature(featureDescriptor.FeatureId);
+                    _configuration.PersistProvider.DisableFeature(featureDescriptor.FeatureId);
                 }
             }
         }
 
+        /// <summary>
+        /// Starts the module container by using the specified <see cref="IActivatingEnvironment"/>.
+        /// </summary>
+        /// <param name="environment">The <see cref="IActivatingEnvironment"/>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="environment"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The container has been started.</exception>
         public void Start(IActivatingEnvironment environment)
         {
+            ValidateDisposed();
+            if (_environment != null)
+            {
+                throw new InvalidOperationException(Strings.Container_StartAgain);
+            }
+            if (environment == null)
+            {
+                throw new ArgumentNullException(nameof(environment));
+            }
             _environment = environment;
-            Discovers.SetReadOnly(true);
-            Locators.SetReadOnly(true);
-            Manifests.SetReadOnly();
-            Initialize((from discover in Discovers
-                        from location in Locators.SelectMany(locator => locator.GetLocations())
-                        from module in discover.Discover(new DiscoverContext { Location = location, Manifest = Manifests })
+            _configuration.SetReadOnly();
+            Initialize((from discover in _configuration.Discovers
+                        from location in _configuration.Locators.SelectMany(locator => locator.GetLocations())
+                        from module in discover.Discover(new DiscoverContext { Location = location, Manifest = _configuration.Manifests, ShadowPath = _configuration.ShadowPath })
                         select module).ToArray(), environment);
             Recover(environment);
             StartupModules(_modules);
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveDepedencyAssembly;
+        }
+
+        private void ValidateStarted()
+        {
+            if (_environment == null)
+            {
+                throw new InvalidOperationException(Strings.Container_NotStart);
+            }
+        }
+
+        private void ValidateDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("ModuleContainer");
+            }
         }
 
         private Assembly OnResolveDepedencyAssembly(object sender, ResolveEventArgs args)
@@ -150,14 +249,6 @@ namespace Wheatech.Modulize
                 }
             }
             return null;
-        }
-
-        private void ValidateStartup()
-        {
-            if (_environment == null)
-            {
-                throw new InvalidOperationException(Strings.Container_NotStart);
-            }
         }
 
         private void InitializeDependencies(ModuleDescriptor[] modules)
@@ -240,12 +331,12 @@ namespace Wheatech.Modulize
                     if (module.ActivationState == ModuleActivationState.RequireInstall)
                     {
                         Version installVersion;
-                        if (ActivationProvider.GetModuleInstalled(module.ModuleId, out installVersion))
+                        if (_configuration.PersistProvider.GetModuleInstalled(module.ModuleId, out installVersion))
                         {
                             if (module.ModuleVersion > installVersion)
                             {
                                 module.Upgrade(environment, installVersion);
-                                ActivationProvider.InstallModule(module.ModuleId, module.ModuleVersion);
+                                _configuration.PersistProvider.InstallModule(module.ModuleId, module.ModuleVersion);
                             }
                             module.AutoInstalled(environment);
                         }
@@ -261,7 +352,7 @@ namespace Wheatech.Modulize
                 if (feature.RuntimeState == FeatureRuntimeState.None)
                 {
                     if (feature.ActivationState == FeatureActivationState.AutoEnable ||
-                        (feature.ActivationState == FeatureActivationState.RequireEnable && ActivationProvider.GetFeatureEnabled(feature.FeatureId)))
+                        (feature.ActivationState == FeatureActivationState.RequireEnable && _configuration.PersistProvider.GetFeatureEnabled(feature.FeatureId)))
                     {
                         feature.Enable(environment);
                     }
@@ -288,6 +379,29 @@ namespace Wheatech.Modulize
                 {
                     ApplicationActivator.Shutdown(module.GetLoadedAssemblies());
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+            _disposed = true;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ShutdownModules(from module in _modules
+                                where module.ActivationState != ModuleActivationState.RequireInstall && module.RuntimeState == ModuleRuntimeState.None
+                                select module);
+                _configuration.Dispose(disposing);
+                _configuration = null;
+                _modules = null;
+                _features = null;
+                _environment = null;
             }
         }
     }

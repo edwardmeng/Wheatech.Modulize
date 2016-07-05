@@ -49,31 +49,7 @@ namespace Wheatech.Modulize
 
         #endregion
 
-        public bool TryRedirect(AssemblyIdentity identity, out AssemblyIdentity redirectedIdentity)
-        {
-            redirectedIdentity = null;
-            return false;
-        }
-
-        public bool TryDependencyLoad(ModuleDescriptor module, AssemblyIdentity identity, out Assembly assembly)
-        {
-            assembly = null;
-            return false;
-        }
-
-        public bool TryInitiatedLoad(ModuleDescriptor module, out Assembly assembly)
-        {
-            try
-            {
-                assembly = Assembly.LoadFile(CodeBase);
-                return assembly != null;
-            }
-            catch (Exception)
-            {
-                assembly = null;
-                return false;
-            }
-        }
+        #region Methods
 
         public AssemblyIdentity CreateIdentity()
         {
@@ -121,7 +97,7 @@ namespace Wheatech.Modulize
             var fileInfo = new FileInfo(fileName);
             if (culture == null)
             {
-                Helper.TryParseCulture(versionInfo.Language, out culture);
+                RuntimeHelper.TryParseCulture(versionInfo.Language, out culture);
             }
             return new FileAssemblyLoader
             {
@@ -142,5 +118,7 @@ namespace Wheatech.Modulize
                 SpecialBuild = versionInfo.SpecialBuild
             };
         }
+
+        #endregion
     }
 }

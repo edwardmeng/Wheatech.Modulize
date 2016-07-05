@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Wheatech.Modulize
 {
-    internal static class Helper
+    internal static class RuntimeHelper
     {
         public static bool TryParseCulture(string cultureName, out CultureInfo culture)
         {

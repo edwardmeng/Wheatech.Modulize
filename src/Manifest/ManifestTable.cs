@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
@@ -54,5 +55,7 @@ namespace Wheatech.Modulize
         {
             _isReadOnly = true;
         }
+
+        internal IManifestParser[] Parsers => _parsers.Values.ToArray();
     }
 }

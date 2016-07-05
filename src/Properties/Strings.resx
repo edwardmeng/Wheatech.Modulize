@@ -165,8 +165,17 @@
   <data name="Collection_ReadOnly" xml:space="preserve">
     <value>The collection is read only.</value>
   </data>
+  <data name="Configuration_ReadOnly" xml:space="preserve">
+    <value>The module configuration is read-only, since the module container has been started.</value>
+  </data>
   <data name="Container_NotStart" xml:space="preserve">
     <value>The module container has not been started.</value>
+  </data>
+  <data name="Container_StartAgain" xml:space="preserve">
+    <value>The module container has been started, and cannot be started again.</value>
+  </data>
+  <data name="Container_Started" xml:space="preserve">
+    <value>The module container has been started, and the configuration cannot be changed.</value>
   </data>
   <data name="Discover_AmbiguousFeatureEntry" xml:space="preserve">
     <value>Ambiguous assemblies have been found for the entry assembly of the feature {0}.</value>

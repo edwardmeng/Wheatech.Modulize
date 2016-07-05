@@ -1,6 +1,6 @@
 ﻿namespace Wheatech.Modulize
 {
-    public interface IActivationProvider
+    public interface IPersistProvider
     {
         /// <summary>
         /// Saves the installed module by using the module ID and the installed version.

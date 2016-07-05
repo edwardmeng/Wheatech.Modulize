@@ -68,8 +68,14 @@
     <Compile Include="Activation\ModuleActivator.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
+    <Compile Include="IModuleConfiguration.cs" />
     <Compile Include="IModuleContainer.cs" />
+    <Compile Include="ModuleConfiguration.cs" />
+    <Compile Include="ModuleConfigurationExtensions.cs" />
     <Compile Include="ModuleContainer.cs" />
+    <Compile Include="ModuleContainerExtensions.cs" />
+    <Compile Include="ModuleContainerStartup.cs" />
+    <Compile Include="Modulizer.cs" />
     <Compile Include="Runtime\AssemblyExtensions.cs" />
     <Compile Include="Runtime\AssemblyMatchResult.cs" />
     <Compile Include="Runtime\ConfigAssemblyLoader.cs" />
@@ -90,7 +96,7 @@
     <Compile Include="Discover\DiscoverStrategy.cs" />
     <Compile Include="Discover\IModuleDiscover.cs" />
     <Compile Include="Discover\ModuleDiscoverCollection.cs" />
-    <Compile Include="Activation\IActivationProvider.cs" />
+    <Compile Include="IPersistProvider.cs" />
     <Compile Include="Location\IModuleLocator.cs" />
     <Compile Include="Location\JsonModuleLocator.cs" />
     <Compile Include="Location\ModuleLocation.cs" />
@@ -110,7 +116,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="Helper.cs" />
+    <Compile Include="Runtime\RuntimeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Strings.resx">

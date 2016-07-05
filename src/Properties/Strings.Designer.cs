@@ -205,11 +205,38 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The module configuration is read-only, since the module container has been started. 的本地化字符串。
+        /// </summary>
+        internal static string Configuration_ReadOnly {
+            get {
+                return ResourceManager.GetString("Configuration_ReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The module container has not been started. 的本地化字符串。
         /// </summary>
         internal static string Container_NotStart {
             get {
                 return ResourceManager.GetString("Container_NotStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The module container has been started, and cannot be started again. 的本地化字符串。
+        /// </summary>
+        internal static string Container_StartAgain {
+            get {
+                return ResourceManager.GetString("Container_StartAgain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The module container has been started, and the configuration cannot be changed. 的本地化字符串。
+        /// </summary>
+        internal static string Container_Started {
+            get {
+                return ResourceManager.GetString("Container_Started", resourceCulture);
             }
         }
         

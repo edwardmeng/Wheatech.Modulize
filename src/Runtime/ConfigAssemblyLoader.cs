@@ -125,7 +125,7 @@ namespace Wheatech.Modulize
             var name = GetAttribute(configNode, "name");
             if (string.IsNullOrEmpty(name)) return false;
             CultureInfo culture;
-            if (!Helper.TryParseCulture(GetAttribute(configNode, "culture"), out culture)) return false;
+            if (!RuntimeHelper.TryParseCulture(GetAttribute(configNode, "culture"), out culture)) return false;
             byte[] publicKeyToken;
             if (!TryParsepPublicKeyToken(GetAttribute(configNode, "publicKeyToken"), out publicKeyToken)) return false;
             ProcessorArchitecture architecture;
@@ -134,34 +134,38 @@ namespace Wheatech.Modulize
             return true;
         }
 
+        private static bool TryParsepPublicKeyToken(string publicKeyTokenText, out byte[] publicKeyToken)
+        {
+            publicKeyToken = null;
+            if (string.IsNullOrEmpty(publicKeyTokenText) || string.Equals(publicKeyTokenText, "null", StringComparison.OrdinalIgnoreCase)) return true;
+            if (publicKeyTokenText.Length % 2 != 0) return false;
+            publicKeyToken = new byte[publicKeyTokenText.Length / 2];
+            for (int i = 0; i < publicKeyToken.Length; i++)
+            {
+                byte byteValue;
+                if (!byte.TryParse(publicKeyTokenText.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byteValue))
+                {
+                    return false;
+                }
+                publicKeyToken[i] = byteValue;
+            }
+            return true;
+        }
+
+        private static bool TryParseArchitecture(string processorArchitectureText, out ProcessorArchitecture architecture)
+        {
+            architecture = ProcessorArchitecture.None;
+            return string.IsNullOrEmpty(processorArchitectureText) || Enum.TryParse(processorArchitectureText, true, out architecture);
+        }
+
+        private static string GetAttribute(XmlNode node, string name)
+        {
+            return node.Attributes?.GetNamedItem(name)?.Value;
+        }
+
         #endregion
 
-        private static string ResolveAssemblyLocation(ModuleDescriptor module, string location)
-        {
-            if (location.StartsWith("~/"))
-            {
-                return Path.Combine(module.ShadowPath, location.Substring(2));
-            }
-            if (IsAbsolutePhysicalPath(location) || IsUriPath(location))
-            {
-                return location;
-            }
-            return Path.Combine(module.ShadowPath, location);
-        }
-
-        private bool Satisfies(AssemblyIdentity identity)
-        {
-            if (!AssemblyIdentityComparer.ShortName.Equals(Identity, identity)) return false;
-            if (Identity.Culture != null && !string.Equals(Identity.CultureName, identity.CultureName, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (Identity.PublicKeyToken != null && (identity.PublicKeyToken == null || !Identity.PublicKeyToken.SequenceEqual(identity.PublicKeyToken)))
-            {
-                return false;
-            }
-            return Identity.Architecture == ProcessorArchitecture.None || Identity.Architecture == identity.Architecture;
-        }
+        #region Methods
 
         public AssemblyIdentity CreateIdentity()
         {
@@ -220,74 +224,6 @@ namespace Wheatech.Modulize
             return Assembly.LoadFrom(location);
         }
 
-        public bool TryRedirect(AssemblyIdentity identity, out AssemblyIdentity redirectedIdentity)
-        {
-            if (identity == null) throw new ArgumentNullException(nameof(identity));
-            if (BindingRedirect != null && BindingRedirect.OldVersion.Match(new Version(identity.Version)) && Satisfies(identity))
-            {
-                redirectedIdentity = new AssemblyIdentity(identity.ShortName, BindingRedirect.NewVersion, identity.Culture, identity.PublicKeyToken, identity.Architecture);
-                return true;
-            }
-            else
-            {
-                redirectedIdentity = null;
-                return false;
-            }
-        }
-
-        public bool TryDependencyLoad(ModuleDescriptor module, AssemblyIdentity identity, out Assembly assembly)
-        {
-            assembly = null;
-            if (CodeBase != null && Satisfies(identity) && identity.Version != null && Equals(identity.Version, CodeBase.Version))
-            {
-                try
-                {
-                    assembly = Assembly.LoadFrom(ResolveAssemblyLocation(module, CodeBase.Location));
-                    return assembly != null;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            return false;
-        }
-
-        public bool TryInitiatedLoad(ModuleDescriptor module, out Assembly assembly)
-        {
-            assembly = null;
-            return false;
-        }
-
-        private static string GetAttribute(XmlNode node, string name)
-        {
-            return node.Attributes?.GetNamedItem(name)?.Value;
-        }
-
-        private static bool TryParsepPublicKeyToken(string publicKeyTokenText, out byte[] publicKeyToken)
-        {
-            publicKeyToken = null;
-            if (string.IsNullOrEmpty(publicKeyTokenText) || string.Equals(publicKeyTokenText, "null", StringComparison.OrdinalIgnoreCase)) return true;
-            if (publicKeyTokenText.Length % 2 != 0) return false;
-            publicKeyToken = new byte[publicKeyTokenText.Length / 2];
-            for (int i = 0; i < publicKeyToken.Length; i++)
-            {
-                byte byteValue;
-                if (!byte.TryParse(publicKeyTokenText.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out byteValue))
-                {
-                    return false;
-                }
-                publicKeyToken[i] = byteValue;
-            }
-            return true;
-        }
-
-        private static bool TryParseArchitecture(string processorArchitectureText, out ProcessorArchitecture architecture)
-        {
-            architecture = ProcessorArchitecture.None;
-            return string.IsNullOrEmpty(processorArchitectureText) || Enum.TryParse(processorArchitectureText, true, out architecture);
-        }
-
         public static bool IsAbsolutePhysicalPath(string path)
         {
             if (path == null || path.Length < 3)
@@ -317,5 +253,6 @@ namespace Wheatech.Modulize
             return scheme == "http" || scheme == "https" || scheme == "ftp" || scheme == "file";
         }
 
+        #endregion
     }
 }
