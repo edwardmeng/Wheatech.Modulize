@@ -1,9 +1,9 @@
 ﻿namespace Wheatech.Modulize
 {
     /// <summary>
-    /// The enumeration for the activation state of <see cref="FeatureDescriptor"/>.
+    /// The enumeration for the enable state of <see cref="FeatureDescriptor"/>.
     /// </summary>
-    public enum FeatureActivationState
+    public enum FeatureEnableState
     {
         /// <summary>
         /// The feature has declared enable method and the method has not been invoked.

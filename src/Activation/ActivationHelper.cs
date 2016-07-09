@@ -129,9 +129,9 @@ namespace Wheatech.Modulize
             return assemblyName.ProcessorArchitecture == ProcessorArchitecture.MSIL || assemblyName.ProcessorArchitecture == identity.Architecture;
         }
 
-        public static Assembly GetDomainAssembly(AssemblyIdentity assemblyIdentity)
+        public static Assembly GetDomainAssembly(IActivatingEnvironment environment, AssemblyIdentity assemblyIdentity)
         {
-            return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => MatchAssembly(assembly, assemblyIdentity));
+            return environment.GetAssemblies().FirstOrDefault(assembly => MatchAssembly(assembly, assemblyIdentity));
         }
     }
 }

@@ -14,14 +14,14 @@ namespace Wheatech.Modulize
         private Tuple<Version, MethodInfo>[] _installMethods;
         private MethodInfo[] _uninstallMethods;
         private bool _installed;
-        private bool _refreshingState;
+        private bool _refreshingErrors;
 
         internal void Initialize(IActivatingEnvironment environment)
         {
             if (EntryAssembly != null)
             {
                 Assembly entryAssembly;
-                if (TryLoadAssembly(EntryAssembly, out entryAssembly))
+                if (TryLoadAssembly(environment, EntryAssembly, out entryAssembly))
                 {
                     IEnumerable<TypeInfo> types;
                     try
@@ -68,24 +68,24 @@ namespace Wheatech.Modulize
             }
         }
 
-        public ModuleActivationState ActivationState
+        public ModuleInstallState InstallState
         {
             get
             {
                 if ((_installMethods != null && _installMethods.Length > 0) || (_uninstallMethods != null && _uninstallMethods.Length > 0))
                 {
-                    return _installed ? ModuleActivationState.Installed : ModuleActivationState.RequireInstall;
+                    return _installed ? ModuleInstallState.Installed : ModuleInstallState.RequireInstall;
                 }
-                return ModuleActivationState.AutoInstall;
+                return ModuleInstallState.AutoInstall;
             }
         }
 
-        public ModuleRuntimeState RuntimeState { get; internal set; }
+        public ModuleErrors Errors { get; internal set; }
 
         internal void AutoInstalled(IActivatingEnvironment environment)
         {
             _installed = true;
-            RefreshRuntimeState(environment);
+            RefreshErrors(environment);
         }
 
         internal void Install(IActivatingEnvironment environment)
@@ -98,7 +98,7 @@ namespace Wheatech.Modulize
                 }
             }
             _installed = true;
-            RefreshRuntimeState(environment);
+            RefreshErrors(environment);
         }
 
         internal void Upgrade(IActivatingEnvironment environment, Version installedVersion)
@@ -125,10 +125,10 @@ namespace Wheatech.Modulize
                 }
             }
             _installed = false;
-            RefreshRuntimeState(environment);
+            RefreshErrors(environment);
         }
 
-        internal bool TryLoadAssembly(AssemblyIdentity assemblyIdentity, out Assembly assembly)
+        internal bool TryLoadAssembly(IActivatingEnvironment environment, AssemblyIdentity assemblyIdentity, out Assembly assembly)
         {
             assembly = null;
             foreach (var assemblyLoader in Assemblies)
@@ -137,7 +137,7 @@ namespace Wheatech.Modulize
                 {
                     case AssemblyMatchResult.Success:
                     case AssemblyMatchResult.RedirectAndMatch:
-                        assembly = LoadAssembly(assemblyLoader);
+                        assembly = LoadAssembly(environment, assemblyLoader);
                         if (!_loadedAssemblies.Contains(assembly))
                         {
                             _loadedAssemblies.Add(assembly);
@@ -148,11 +148,11 @@ namespace Wheatech.Modulize
             return false;
         }
 
-        internal void LoadAssemblies()
+        internal void LoadAssemblies(IActivatingEnvironment environment)
         {
             foreach (var assemblyLoader in Assemblies)
             {
-                var assembly = LoadAssembly(assemblyLoader);
+                var assembly = LoadAssembly(environment, assemblyLoader);
                 if (!_loadedAssemblies.Contains(assembly))
                 {
                     _loadedAssemblies.Add(assembly);
@@ -160,11 +160,11 @@ namespace Wheatech.Modulize
             }
         }
 
-        private Assembly LoadAssembly(IAssemblyLoader assemblyLoader)
+        private Assembly LoadAssembly(IActivatingEnvironment environment, IAssemblyLoader assemblyLoader)
         {
             var assemblyIdentity = assemblyLoader.CreateIdentity();
             return _loadedAssemblies.FirstOrDefault(assembly => ActivationHelper.MatchAssembly(assembly, assemblyIdentity)) ??
-                   ActivationHelper.GetDomainAssembly(assemblyIdentity) ?? assemblyLoader.Load(this);
+                   ActivationHelper.GetDomainAssembly(environment, assemblyIdentity) ?? assemblyLoader.Load(this);
         }
 
         internal void Startup()
@@ -177,31 +177,31 @@ namespace Wheatech.Modulize
             return _loadedAssemblies.ToArray();
         }
 
-        internal void RefreshRuntimeState(IActivatingEnvironment environment)
+        internal void RefreshErrors(IActivatingEnvironment environment)
         {
-            if (_refreshingState) return;
-            _refreshingState = true;
+            if (_refreshingErrors) return;
+            _refreshingErrors = true;
             if (HostVersion != null && !HostVersion.Match(environment.ApplicationVersion))
             {
-                RuntimeState |= ModuleRuntimeState.IncompatibleHost;
+                Errors |= ModuleErrors.IncompatibleHost;
             }
             else
             {
-                RuntimeState &= ~ModuleRuntimeState.IncompatibleHost;
+                Errors &= ~ModuleErrors.IncompatibleHost;
             }
             foreach (var feature in Features)
             {
-                feature.RefreshRuntimeState(environment);
+                feature.RefreshErrors(environment);
             }
-            if (Features.All(feature => (feature.RuntimeState & ~FeatureRuntimeState.ForbiddenModule & ~FeatureRuntimeState.UninstallModule) != FeatureRuntimeState.None))
+            if (Features.All(feature => (feature.Errors & ~FeatureErrors.ForbiddenModule & ~FeatureErrors.UninstallModule) != FeatureErrors.None))
             {
-                RuntimeState |= ModuleRuntimeState.ForbiddenFeatures;
+                Errors |= ModuleErrors.ForbiddenFeatures;
             }
             else
             {
-                RuntimeState &= ~ModuleRuntimeState.ForbiddenFeatures;
+                Errors &= ~ModuleErrors.ForbiddenFeatures;
             }
-            _refreshingState = false;
+            _refreshingErrors = false;
         }
     }
 }

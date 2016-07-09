@@ -13,21 +13,21 @@ namespace Wheatech.Modulize
         private MethodInfo _enableMethod;
         private MethodInfo _disableMethod;
         private bool _enabled;
-        private bool _refreshingState;
+        private bool _refreshingErrors;
 
         internal void Initialize(IActivatingEnvironment environment)
         {
             Assembly entryAssembly = null;
             if (EntryAssembly != null)
             {
-                if (!Module.TryLoadAssembly(EntryAssembly, out entryAssembly))
+                if (!Module.TryLoadAssembly(environment, EntryAssembly, out entryAssembly))
                 {
                     throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotLoadFeatureEntry, EntryAssembly, FeatureId));
                 }
             }
             else if (Module.EntryAssembly != null)
             {
-                Module.TryLoadAssembly(Module.EntryAssembly, out entryAssembly);
+                Module.TryLoadAssembly(environment, Module.EntryAssembly, out entryAssembly);
             }
             if (entryAssembly != null)
             {
@@ -97,7 +97,7 @@ namespace Wheatech.Modulize
                 ActivationHelper.InvokeMethod(_enableMethod, environment);
             }
             _enabled = true;
-            RefreshRuntimeState(environment);
+            RefreshErrors(environment);
         }
 
         internal void Disable(IActivatingEnvironment environment)
@@ -107,70 +107,70 @@ namespace Wheatech.Modulize
                 ActivationHelper.InvokeMethod(_disableMethod, environment);
             }
             _enabled = false;
-            RefreshRuntimeState(environment);
+            RefreshErrors(environment);
         }
 
-        internal void RefreshRuntimeState(IActivatingEnvironment environment)
+        internal void RefreshErrors(IActivatingEnvironment environment)
         {
-            if (_refreshingState) return;
-            _refreshingState = true;
+            if (_refreshingErrors) return;
+            _refreshingErrors = true;
 
             var dependencyFeatures = (from dependency in Dependencies
                                       where dependency.Feature != null
                                       select dependency.Feature).ToArray();
-            if (dependencyFeatures.Any(feature => feature.RuntimeState != FeatureRuntimeState.None))
+            if (dependencyFeatures.Any(feature => feature.Errors != FeatureErrors.None))
             {
-                RuntimeState |= FeatureRuntimeState.ForbiddenDependency;
+                Errors |= FeatureErrors.ForbiddenDependency;
             }
             else
             {
-                RuntimeState &= ~FeatureRuntimeState.ForbiddenDependency;
+                Errors &= ~FeatureErrors.ForbiddenDependency;
             }
-            if (dependencyFeatures.Any(feature => feature.ActivationState == FeatureActivationState.RequireEnable))
+            if (dependencyFeatures.Any(feature => feature.EnableState == FeatureEnableState.RequireEnable))
             {
-                RuntimeState |= FeatureRuntimeState.DisabledDependency;
+                Errors |= FeatureErrors.DisabledDependency;
             }
             else
             {
-                RuntimeState &= ~FeatureRuntimeState.DisabledDependency;
+                Errors &= ~FeatureErrors.DisabledDependency;
             }
 
-            if (Module.ActivationState == ModuleActivationState.RequireInstall)
+            if (Module.InstallState == ModuleInstallState.RequireInstall)
             {
-                RuntimeState |= FeatureRuntimeState.UninstallModule;
+                Errors |= FeatureErrors.UninstallModule;
             }
             else
             {
-                RuntimeState &= ~FeatureRuntimeState.UninstallModule;
+                Errors &= ~FeatureErrors.UninstallModule;
             }
 
-            Module.RefreshRuntimeState(environment);
-            if ((Module.RuntimeState & ~ModuleRuntimeState.ForbiddenFeatures) != ModuleRuntimeState.None)
+            Module.RefreshErrors(environment);
+            if ((Module.Errors & ~ModuleErrors.ForbiddenFeatures) != ModuleErrors.None)
             {
-                RuntimeState |= FeatureRuntimeState.ForbiddenModule;
+                Errors |= FeatureErrors.ForbiddenModule;
             }
             else
             {
-                RuntimeState &= ~FeatureRuntimeState.ForbiddenModule;
+                Errors &= ~FeatureErrors.ForbiddenModule;
             }
             foreach (var dependingFeature in Dependings)
             {
-                dependingFeature.RefreshRuntimeState(environment);
+                dependingFeature.RefreshErrors(environment);
             }
-            _refreshingState = false;
+            _refreshingErrors = false;
         }
 
-        public FeatureRuntimeState RuntimeState { get; internal set; }
+        public FeatureErrors Errors { get; internal set; }
 
-        public FeatureActivationState ActivationState
+        public FeatureEnableState EnableState
         {
             get
             {
                 if (_enableMethod != null || _disableMethod != null)
                 {
-                    return _enabled ? FeatureActivationState.Enabled : FeatureActivationState.RequireEnable;
+                    return _enabled ? FeatureEnableState.Enabled : FeatureEnableState.RequireEnable;
                 }
-                return FeatureActivationState.AutoEnable;
+                return FeatureEnableState.AutoEnable;
             }
         }
     }

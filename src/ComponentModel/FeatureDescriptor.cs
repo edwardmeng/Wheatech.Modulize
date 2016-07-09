@@ -24,7 +24,7 @@
             internal set { _dependencies = value; }
         }
 
-        public FeatureDescriptorCollection Dependings => _dependings ?? (_dependings = new FeatureDescriptorCollection());
+        internal FeatureDescriptorCollection Dependings => _dependings ?? (_dependings = new FeatureDescriptorCollection());
 
         public ModuleDescriptor Module { get; internal set; }
     }

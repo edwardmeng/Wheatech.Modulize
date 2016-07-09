@@ -20,6 +20,24 @@ namespace Wheatech.Modulize
 
         #endregion
 
+        #region DependentFeature
+
+        private class DependentFeature
+        {
+            public DependentFeature(FeatureDescriptor feature)
+            {
+                Feature = feature;
+            }
+
+            public IList<DependentFeature> Incomings { get; } = new List<DependentFeature>();
+
+            public IList<DependentFeature> Outcommings { get; } = new List<DependentFeature>();
+
+            public FeatureDescriptor Feature { get; }
+        }
+
+        #endregion
+
         /// <summary>
         /// Initialize new instance of <see cref="ModuleContainer"/>.
         /// </summary>
@@ -95,7 +113,7 @@ namespace Wheatech.Modulize
             var moduleDescriptors = _modules.Where(module => moduleIds.Contains(module.ModuleId)).ToArray();
             foreach (var moduleDescriptor in moduleDescriptors)
             {
-                if (moduleDescriptor.RuntimeState == ModuleRuntimeState.None && moduleDescriptor.ActivationState == ModuleActivationState.RequireInstall)
+                if (moduleDescriptor.Errors == ModuleErrors.None && moduleDescriptor.InstallState == ModuleInstallState.RequireInstall)
                 {
                     moduleDescriptor.Install(_environment);
                     _configuration.PersistProvider.InstallModule(moduleDescriptor.ModuleId, moduleDescriptor.ModuleVersion);
@@ -122,7 +140,7 @@ namespace Wheatech.Modulize
             var moduleDescriptors = _modules.Where(module => moduleIds.Contains(module.ModuleId)).Reverse().ToArray();
             foreach (var moduleDescriptor in moduleDescriptors)
             {
-                if (moduleDescriptor.RuntimeState == ModuleRuntimeState.None && moduleDescriptor.ActivationState == ModuleActivationState.Installed)
+                if (moduleDescriptor.Errors == ModuleErrors.None && moduleDescriptor.InstallState == ModuleInstallState.Installed)
                 {
                     moduleDescriptor.Uninstall(_environment);
                     _configuration.PersistProvider.UninstallModule(moduleDescriptor.ModuleId);
@@ -149,7 +167,7 @@ namespace Wheatech.Modulize
             var featureDescriptors = _features.Where(feature => featureIds.Contains(feature.FeatureId)).ToArray();
             foreach (var featureDescriptor in featureDescriptors)
             {
-                if (featureDescriptor.RuntimeState == FeatureRuntimeState.None && featureDescriptor.ActivationState == FeatureActivationState.RequireEnable)
+                if (featureDescriptor.Errors == FeatureErrors.None && featureDescriptor.EnableState == FeatureEnableState.RequireEnable)
                 {
                     featureDescriptor.Enable(_environment);
                     _configuration.PersistProvider.EnableFeature(featureDescriptor.FeatureId);
@@ -175,7 +193,7 @@ namespace Wheatech.Modulize
             var featureDescriptors = _features.Where(feature => featureIds.Contains(feature.FeatureId)).Reverse().ToArray();
             foreach (var featureDescriptor in featureDescriptors)
             {
-                if (featureDescriptor.RuntimeState == FeatureRuntimeState.None && featureDescriptor.ActivationState == FeatureActivationState.Enabled)
+                if (featureDescriptor.Errors == FeatureErrors.None && featureDescriptor.EnableState == FeatureEnableState.Enabled)
                 {
                     featureDescriptor.Disable(_environment);
                     _configuration.PersistProvider.DisableFeature(featureDescriptor.FeatureId);
@@ -239,43 +257,16 @@ namespace Wheatech.Modulize
             {
                 return Assembly.LoadFrom(args.Name);
             }
-            var assembly = ActivationHelper.GetDomainAssembly(identity);
+            var assembly = ActivationHelper.GetDomainAssembly(_environment, identity);
             if (assembly != null) return assembly;
             foreach (var module in _modules)
             {
-                if (module.TryLoadAssembly(identity, out assembly))
+                if (module.TryLoadAssembly(_environment, identity, out assembly))
                 {
                     return assembly;
                 }
             }
             return null;
-        }
-
-        private void InitializeDependencies(ModuleDescriptor[] modules)
-        {
-            var features = modules.SelectMany(module => module.Features).ToArray();
-            var featuresDictionary = features.ToDictionary(feature => feature.FeatureId);
-            foreach (var feature in features)
-            {
-                foreach (var dependency in feature.Dependencies)
-                {
-                    FeatureDescriptor dependentFeature;
-                    if (!featuresDictionary.TryGetValue(dependency.FeatureId, out dependentFeature))
-                    {
-                        feature.RuntimeState |= FeatureRuntimeState.MissingDependency;
-                    }
-                    else if (dependency.Version != null && !dependency.Version.Match(dependentFeature.Module.ModuleVersion))
-                    {
-                        feature.RuntimeState |= FeatureRuntimeState.IncompatibleDependency;
-                    }
-                    dependency.Feature = dependentFeature;
-                    dependentFeature?.Dependings.Add(feature);
-                }
-            }
-            foreach (var feature in features)
-            {
-                feature.Dependings.SetReadOnly();
-            }
         }
 
         private void Initialize(ModuleDescriptor[] modules, IActivatingEnvironment environment)
@@ -299,36 +290,34 @@ namespace Wheatech.Modulize
                 throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_DuplicateFeatures, string.Join(", ", duplicateFeatures)));
             }
 
+            _features = SortFeatures(modules);
+            _modules = _features.Select(feature => feature.Module).Distinct().ToArray();
+
             // Load the assemblies in module configuration files or bin folder.
             // At this time the reference assemblies will not be requested by the framework.
-            foreach (var module in modules)
+            foreach (var module in _modules)
             {
-                module.LoadAssemblies();
+                module.LoadAssemblies(environment);
             }
 
-            InitializeDependencies(modules);
-
             foreach (var module in modules)
             {
-                module.RefreshRuntimeState(environment);
+                module.RefreshErrors(environment);
                 module.Initialize(environment);
                 foreach (var feature in module.Features)
                 {
                     feature.Initialize(environment);
                 }
             }
-            _features = modules.SelectMany(module => module.Features).Sort();
-            _modules = _features.Select(feature => feature.Module).Distinct().ToArray();
         }
 
         private void Recover(IActivatingEnvironment environment)
         {
-            var features = _modules.SelectMany(module => module.Features).Sort();
-            foreach (var module in features.Select(feature => feature.Module).Distinct())
+            foreach (var module in _modules)
             {
-                if (module.RuntimeState == ModuleRuntimeState.None)
+                if (module.Errors == ModuleErrors.None)
                 {
-                    if (module.ActivationState == ModuleActivationState.RequireInstall)
+                    if (module.InstallState == ModuleInstallState.RequireInstall)
                     {
                         Version installVersion;
                         if (_configuration.PersistProvider.GetModuleInstalled(module.ModuleId, out installVersion))
@@ -341,18 +330,18 @@ namespace Wheatech.Modulize
                             module.AutoInstalled(environment);
                         }
                     }
-                    else if (module.ActivationState == ModuleActivationState.AutoInstall)
+                    else if (module.InstallState == ModuleInstallState.AutoInstall)
                     {
                         module.AutoInstalled(environment);
                     }
                 }
             }
-            foreach (var feature in features)
+            foreach (var feature in _features)
             {
-                if (feature.RuntimeState == FeatureRuntimeState.None)
+                if (feature.Errors == FeatureErrors.None)
                 {
-                    if (feature.ActivationState == FeatureActivationState.AutoEnable ||
-                        (feature.ActivationState == FeatureActivationState.RequireEnable && _configuration.PersistProvider.GetFeatureEnabled(feature.FeatureId)))
+                    if (feature.EnableState == FeatureEnableState.AutoEnable ||
+                        (feature.EnableState == FeatureEnableState.RequireEnable && _configuration.PersistProvider.GetFeatureEnabled(feature.FeatureId)))
                     {
                         feature.Enable(environment);
                     }
@@ -364,7 +353,7 @@ namespace Wheatech.Modulize
         {
             foreach (var module in modules)
             {
-                if (module.RuntimeState == ModuleRuntimeState.None && module.ActivationState != ModuleActivationState.RequireInstall)
+                if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.RequireInstall)
                 {
                     ApplicationActivator.Startup(module.GetLoadedAssemblies());
                 }
@@ -375,11 +364,84 @@ namespace Wheatech.Modulize
         {
             foreach (var module in modules)
             {
-                if (module.RuntimeState == ModuleRuntimeState.None)
+                if (module.Errors == ModuleErrors.None)
                 {
                     ApplicationActivator.Shutdown(module.GetLoadedAssemblies());
                 }
             }
+        }
+
+        private IEnumerable<DependentFeature> CreateFeatureGraph(IEnumerable<ModuleDescriptor> modules)
+        {
+            var nodes = new Dictionary<string, DependentFeature>();
+            foreach (var module in modules)
+            {
+                foreach (var feature in module.Features)
+                {
+                    nodes.Add(feature.FeatureId, new DependentFeature(feature));
+                }
+            }
+            foreach (var feature in nodes.Values)
+            {
+                foreach (var dependency in feature.Feature.Dependencies)
+                {
+                    DependentFeature dependentFeature;
+                    if (!nodes.TryGetValue(dependency.FeatureId, out dependentFeature))
+                    {
+                        feature.Feature.Errors |= FeatureErrors.MissingDependency;
+                    }
+                    else if (dependency.Version != null && !dependency.Version.Match(dependentFeature.Feature.Module.ModuleVersion))
+                    {
+                        feature.Feature.Errors |= FeatureErrors.IncompatibleDependency;
+                    }
+                    if (dependentFeature != null)
+                    {
+                        dependency.Feature = dependentFeature.Feature;
+                        dependentFeature.Feature.Dependings.Add(feature.Feature);
+                        dependentFeature.Incomings.Add(feature);
+                        feature.Outcommings.Add(dependentFeature);
+                    }
+                }
+            }
+            foreach (var feature in nodes.Values)
+            {
+                feature.Feature.Dependings.SetReadOnly();
+            }
+            return nodes.Values;
+        }
+
+        private FeatureDescriptor[] SortFeatures(IEnumerable<ModuleDescriptor> modules)
+        {
+            var graph = CreateFeatureGraph(modules).ToList();
+            var sorted = new List<FeatureDescriptor>();
+            var queue = new Queue<DependentFeature>(graph.Where(node => node.Outcommings.Count == 0));
+            while (queue.Count > 0)
+            {
+                var node = queue.Dequeue();
+                if (node.Outcommings.Count == 0)
+                {
+                    foreach (var incomeNode in node.Incomings)
+                    {
+                        incomeNode.Outcommings.Remove(node);
+                        queue.Enqueue(incomeNode);
+                    }
+                    sorted.Add(node.Feature);
+                    graph.Remove(node);
+                }
+            }
+            if (graph.Count > 0)
+            {
+                var circle = new List<DependentFeature>();
+                var currentNode = graph[0];
+                while (!circle.Contains(currentNode))
+                {
+                    circle.Add(currentNode);
+                    currentNode = currentNode.Outcommings.First();
+                }
+                throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CircleDependency,
+                    string.Join(", ", circle.Select(node => node.Feature.FeatureId))));
+            }
+            return sorted.ToArray();
         }
 
         public void Dispose()
@@ -394,8 +456,9 @@ namespace Wheatech.Modulize
         {
             if (disposing)
             {
+                AppDomain.CurrentDomain.AssemblyResolve -= OnResolveDepedencyAssembly;
                 ShutdownModules(from module in _modules
-                                where module.ActivationState != ModuleActivationState.RequireInstall && module.RuntimeState == ModuleRuntimeState.None
+                                where module.InstallState != ModuleInstallState.RequireInstall && module.Errors == ModuleErrors.None
                                 select module);
                 _configuration.Dispose(disposing);
                 _configuration = null;

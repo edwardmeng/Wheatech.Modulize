@@ -58,12 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHelper.cs" />
-    <Compile Include="Activation\DependencyResolver.cs" />
-    <Compile Include="Activation\FeatureActivationState.cs" />
+    <Compile Include="Activation\FeatureEnableState.cs" />
     <Compile Include="Activation\FeatureActivatorAttribute.cs" />
     <Compile Include="Activation\FeatureActivator.cs" />
     <Compile Include="Activation\ModuleActivationException.cs" />
-    <Compile Include="Activation\ModuleActivationState.cs" />
+    <Compile Include="Activation\ModuleInstallState.cs" />
     <Compile Include="Activation\ModuleInstallerAttribute.cs" />
     <Compile Include="Activation\ModuleActivator.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
@@ -81,14 +80,13 @@
     <Compile Include="Runtime\ConfigAssemblyLoader.cs" />
     <Compile Include="ComponentModel\DependencyDescriptor.cs" />
     <Compile Include="ComponentModel\DependencyDescriptorCollection.cs" />
-    <Compile Include="ComponentModel\DependentNode.cs" />
     <Compile Include="ComponentModel\FeatureDescriptor.cs" />
     <Compile Include="ComponentModel\FeatureDescriptorCollection.cs" />
-    <Compile Include="Activation\FeatureRuntimeState.cs" />
+    <Compile Include="Activation\FeatureErrors.cs" />
     <Compile Include="Runtime\FileAssemblyLoader.cs" />
     <Compile Include="Runtime\IAssemblyLoader.cs" />
     <Compile Include="ComponentModel\ModuleDescriptor.cs" />
-    <Compile Include="Activation\ModuleRuntimeState.cs" />
+    <Compile Include="Activation\ModuleErrors.cs" />
     <Compile Include="Discover\AssemblyModuleDiscover.cs" />
     <Compile Include="Discover\CompressionModuleDiscover.cs" />
     <Compile Include="Discover\DirectoryModuleDiscover.cs" />

@@ -1,9 +1,9 @@
 ﻿namespace Wheatech.Modulize
 {
     /// <summary>
-    /// The enumeration for the activation state of <see cref="ModuleDescriptor"/>.
+    /// The enumeration for the install state of <see cref="ModuleDescriptor"/>.
     /// </summary>
-    public enum ModuleActivationState
+    public enum ModuleInstallState
     {
         /// <summary>
         /// The module has declared installers and the installers have not been invoked.
