@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Wheatech.Modulize
@@ -35,7 +36,7 @@ namespace Wheatech.Modulize
 
         private ModuleDescriptor DiscoverModule(FileInfo fileInfo, DiscoverContext context)
         {
-            if (fileInfo.Exists && fileInfo.Extension.ToLower() == ".dll")
+            if (fileInfo.Exists && string.Equals(fileInfo.Extension, ".dll", StringComparison.OrdinalIgnoreCase))
             {
                 var module = GetFileModule(fileInfo.FullName);
                 if (module != null)

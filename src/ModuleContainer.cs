@@ -64,7 +64,7 @@ namespace Wheatech.Modulize
         public IModuleConfiguration Configure()
         {
             ValidateDisposed();
-            if (_environment == null)
+            if (_environment != null)
             {
                 throw new InvalidOperationException(Strings.Container_Started);
             }
@@ -277,7 +277,7 @@ namespace Wheatech.Modulize
                                     select g.Key).ToArray();
             if (duplicateModules.Length > 0)
             {
-                throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_DuplicateModules, string.Join(", ", duplicateModules)));
+                throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_DuplicateModules, string.Join(", ", duplicateModules)));
             }
 
             var duplicateFeatures = (from module in modules
@@ -287,7 +287,7 @@ namespace Wheatech.Modulize
                                      select g.Key).ToArray();
             if (duplicateFeatures.Length > 0)
             {
-                throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_DuplicateFeatures, string.Join(", ", duplicateFeatures)));
+                throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_DuplicateFeatures, string.Join(", ", duplicateFeatures)));
             }
 
             _features = SortFeatures(modules);
@@ -438,7 +438,7 @@ namespace Wheatech.Modulize
                     circle.Add(currentNode);
                     currentNode = currentNode.Outcommings.First();
                 }
-                throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CircleDependency,
+                throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CircleDependency,
                     string.Join(", ", circle.Select(node => node.Feature.FeatureId))));
             }
             return sorted.ToArray();

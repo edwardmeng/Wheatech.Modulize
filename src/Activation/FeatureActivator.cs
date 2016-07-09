@@ -160,6 +160,36 @@ namespace Wheatech.Modulize
             _refreshingErrors = false;
         }
 
+        internal void ValidateEntryAssembly()
+        {
+            if (EntryAssembly != null)
+            {
+                IAssemblyLoader matchEntryAssembly = null;
+                var assemblyIdentity = EntryAssembly;
+                foreach (var assembly in Module.Assemblies)
+                {
+                    switch (assembly.Match(ref assemblyIdentity))
+                    {
+                        case AssemblyMatchResult.Success:
+                        case AssemblyMatchResult.RedirectAndMatch:
+                            if (matchEntryAssembly == null)
+                            {
+                                matchEntryAssembly = assembly;
+                            }
+                            else
+                            {
+                                throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_AmbiguousFeatureEntry, FeatureId));
+                            }
+                            break;
+                    }
+                }
+                if (matchEntryAssembly == null)
+                {
+                    throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_CannotFindFeatureEntry, FeatureId));
+                }
+            }
+        }
+
         public FeatureErrors Errors { get; internal set; }
 
         public FeatureEnableState EnableState

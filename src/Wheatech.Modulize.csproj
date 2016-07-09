@@ -48,8 +48,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
-    <Reference Include="Wheatech">
-      <HintPath>..\packages\Wheatech.1.0.0\lib\Wheatech.dll</HintPath>
+    <Reference Include="Wheatech, Version=1.0.1.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
+      <HintPath>..\packages\Wheatech.1.0.1\lib\net461\Wheatech.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Wheatech.Activation, Version=1.0.4.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
       <HintPath>..\packages\Wheatech.Activation.1.0.4\lib\net461\Wheatech.Activation.dll</HintPath>
@@ -70,12 +71,12 @@
     <Compile Include="IModuleConfiguration.cs" />
     <Compile Include="IModuleContainer.cs" />
     <Compile Include="ModuleConfiguration.cs" />
+    <Compile Include="ModuleConfigurationException.cs" />
     <Compile Include="ModuleConfigurationExtensions.cs" />
     <Compile Include="ModuleContainer.cs" />
     <Compile Include="ModuleContainerExtensions.cs" />
     <Compile Include="ModuleContainerStartup.cs" />
     <Compile Include="Modulizer.cs" />
-    <Compile Include="Runtime\AssemblyExtensions.cs" />
     <Compile Include="Runtime\AssemblyMatchResult.cs" />
     <Compile Include="Runtime\ConfigAssemblyLoader.cs" />
     <Compile Include="ComponentModel\DependencyDescriptor.cs" />

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -211,46 +210,7 @@ namespace Wheatech.Modulize
 
         public Assembly Load(ModuleDescriptor module)
         {
-            if (CodeBase == null) return null;
-            var location = CodeBase.Location;
-            if (location.StartsWith("~/"))
-            {
-                location = Path.Combine(module.ShadowPath, location.Substring(2));
-            }
-            else if (!IsAbsolutePhysicalPath(location) && !IsUriPath(location))
-            {
-                location = Path.Combine(module.ShadowPath, location);
-            }
-            return Assembly.LoadFrom(location);
-        }
-
-        public static bool IsAbsolutePhysicalPath(string path)
-        {
-            if (path == null || path.Length < 3)
-            {
-                return false;
-            }
-            return path[1] == ':' && IsDirectorySeparatorChar(path[2]) || IsUncSharePath(path);
-        }
-
-        private static bool IsDirectorySeparatorChar(char ch)
-        {
-            return ch == '\\' || ch == '/';
-        }
-
-        private static bool IsUncSharePath(string path)
-        {
-            return path.Length > 2 && IsDirectorySeparatorChar(path[0]) && IsDirectorySeparatorChar(path[1]);
-        }
-
-        public static bool IsUriPath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path)) return false;
-            var colonIndex = path.IndexOf(":", StringComparison.Ordinal);
-            if (colonIndex == -1) return false;
-            if (path.Length < colonIndex + 3 || path[colonIndex + 1] != '/' || path[colonIndex + 2] != '/') return false;
-            var scheme = path.Substring(0, colonIndex).Trim().ToLower();
-            return scheme == "http" || scheme == "https" || scheme == "ftp" || scheme == "file";
+            return CodeBase == null ? null : Assembly.LoadFrom(PathUtils.ResolvePath(module.ShadowPath, CodeBase.Location));
         }
 
         #endregion

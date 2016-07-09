@@ -203,5 +203,39 @@ namespace Wheatech.Modulize
             }
             _refreshingErrors = false;
         }
+
+        internal void ValidateEntryAssembly()
+        {
+            if (EntryAssembly != null)
+            {
+                var assemblyIdentity = EntryAssembly;
+                IAssemblyLoader matchEntryAssembly = null;
+                foreach (var assembly in Assemblies)
+                {
+                    switch (assembly.Match(ref assemblyIdentity))
+                    {
+                        case AssemblyMatchResult.Success:
+                        case AssemblyMatchResult.RedirectAndMatch:
+                            if (matchEntryAssembly == null)
+                            {
+                                matchEntryAssembly = assembly;
+                            }
+                            else
+                            {
+                                throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_AmbiguousModuleEntry, ModuleId));
+                            }
+                            break;
+                    }
+                }
+                if (matchEntryAssembly == null)
+                {
+                    throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_CannotFindModuleEntry, ModuleId));
+                }
+            }
+            foreach (var feature in Features)
+            {
+                feature.ValidateEntryAssembly();
+            }
+        }
     }
 }
