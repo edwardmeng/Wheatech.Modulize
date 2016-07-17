@@ -71,6 +71,14 @@ namespace Wheatech.Modulize
             return _configuration;
         }
 
+        internal void Reset()
+        {
+            _modules = null;
+            _features = null;
+            _environment = null;
+            _configuration.SetReadOnly(false);
+        }
+
         /// <summary>
         /// Gets all the discovered modules.
         /// </summary>
@@ -219,9 +227,11 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(environment));
             }
             _environment = environment;
-            _configuration.SetReadOnly();
-            Initialize((from discover in _configuration.Discovers
-                        from location in _configuration.Locators.SelectMany(locator => locator.GetLocations())
+            _configuration.SetReadOnly(true);
+            var locations = _configuration.Locators.SelectMany(locator => locator.GetLocations()).ToArray();
+            var discovers = _configuration.Discovers.ToArray();
+            Initialize((from location in locations
+                        from discover in discovers
                         from module in discover.Discover(new DiscoverContext { Location = location, Manifest = _configuration.Manifests, ShadowPath = _configuration.ShadowPath })
                         select module).ToArray(), environment);
             Recover(environment);

@@ -63,7 +63,7 @@ namespace Wheatech.Modulize
                 }
                 else
                 {
-                    throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotLoadModuleEntry, EntryAssembly, ModuleId));
+                    throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotLoadModuleEntry, ModuleId, EntryAssembly));
                 }
             }
         }
@@ -72,9 +72,10 @@ namespace Wheatech.Modulize
         {
             get
             {
+                if (_installed) return ModuleInstallState.Installed;
                 if ((_installMethods != null && _installMethods.Length > 0) || (_uninstallMethods != null && _uninstallMethods.Length > 0))
                 {
-                    return _installed ? ModuleInstallState.Installed : ModuleInstallState.RequireInstall;
+                    return ModuleInstallState.RequireInstall;
                 }
                 return ModuleInstallState.AutoInstall;
             }
@@ -229,7 +230,7 @@ namespace Wheatech.Modulize
                 }
                 if (matchEntryAssembly == null)
                 {
-                    throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_CannotFindModuleEntry, ModuleId));
+                    throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_CannotFindModuleEntry, ModuleId, EntryAssembly));
                 }
             }
             foreach (var feature in Features)

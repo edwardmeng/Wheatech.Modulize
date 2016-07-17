@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
 namespace Wheatech.Modulize
@@ -10,8 +11,10 @@ namespace Wheatech.Modulize
 
         public IEnumerable<ModuleLocation> GetLocations()
         {
+            var filePath = PathUtils.ResolvePath(LocatorFilePath);
+            if (!File.Exists(filePath)) yield break;
             var document = new XmlDocument();
-            document.Load(PathUtils.ResolvePath(LocatorFilePath));
+            document.Load(filePath);
             var rootElement = document.DocumentElement;
             if (rootElement == null)
             {

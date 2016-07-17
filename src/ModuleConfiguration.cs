@@ -94,13 +94,13 @@ namespace Wheatech.Modulize
         /// <summary>
         /// Sets the configuration to be read-only, and cannot be changed through any exported methods.
         /// </summary>
-        public void SetReadOnly()
+        public void SetReadOnly(bool isReadOnly)
         {
             ValidateDisposed();
-            _isReadOnly = true;
-            Discovers.SetReadOnly(true);
-            Locators.SetReadOnly(true);
-            Manifests.SetReadOnly();
+            _isReadOnly = isReadOnly;
+            Discovers.SetReadOnly(isReadOnly);
+            Locators.SetReadOnly(isReadOnly);
+            Manifests.SetReadOnly(isReadOnly);
         }
 
         private void ValidateReadOnly()

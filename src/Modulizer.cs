@@ -68,5 +68,10 @@ namespace Wheatech.Modulize
         {
             DefaultContainer.Start(environment);
         }
+
+        internal static void Reset()
+        {
+            (DefaultContainer as ModuleContainer)?.Reset();
+        }
     }
 }

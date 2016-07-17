@@ -51,9 +51,9 @@ namespace Wheatech.Modulize
             return false;
         }
 
-        internal void SetReadOnly()
+        internal void SetReadOnly(bool isReadOnly)
         {
-            _isReadOnly = true;
+            _isReadOnly = isReadOnly;
         }
 
         internal IManifestParser[] Parsers => _parsers.Values.ToArray();

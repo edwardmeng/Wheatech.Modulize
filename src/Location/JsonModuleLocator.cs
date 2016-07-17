@@ -15,10 +15,7 @@ namespace Wheatech.Modulize
         public IEnumerable<ModuleLocation> GetLocations()
         {
             var fileInfo = new FileInfo(PathUtils.ResolvePath(LocatorFilePath));
-            if (!fileInfo.Exists)
-            {
-                yield break;
-            }
+            if (!fileInfo.Exists) yield break;
             using (var stream = fileInfo.OpenRead())
             {
                 using (var reader = new StreamReader(stream))

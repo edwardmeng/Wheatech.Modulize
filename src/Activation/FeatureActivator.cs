@@ -185,7 +185,7 @@ namespace Wheatech.Modulize
                 }
                 if (matchEntryAssembly == null)
                 {
-                    throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_CannotFindFeatureEntry, FeatureId));
+                    throw new ModuleConfigurationException(string.Format(CultureInfo.CurrentCulture, Strings.Discover_CannotFindFeatureEntry, FeatureId, EntryAssembly));
                 }
             }
         }
@@ -196,11 +196,8 @@ namespace Wheatech.Modulize
         {
             get
             {
-                if (_enableMethod != null || _disableMethod != null)
-                {
-                    return _enabled ? FeatureEnableState.Enabled : FeatureEnableState.RequireEnable;
-                }
-                return FeatureEnableState.AutoEnable;
+                if (_enabled) return FeatureEnableState.Enabled;
+                return _enableMethod != null || _disableMethod != null ? FeatureEnableState.RequireEnable : FeatureEnableState.AutoEnable;
             }
         }
     }
