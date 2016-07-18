@@ -72,12 +72,16 @@ namespace Wheatech.Modulize
             }
         }
 
+        internal bool HasInstallers => _installMethods != null && _installMethods.Length > 0;
+
+        internal bool HasUninstallers => _uninstallMethods != null && _uninstallMethods.Length > 0;
+
         public ModuleInstallState InstallState
         {
             get
             {
                 if (_installed) return ModuleInstallState.Installed;
-                if ((_installMethods != null && _installMethods.Length > 0) || (_uninstallMethods != null && _uninstallMethods.Length > 0))
+                if (HasInstallers || HasUninstallers)
                 {
                     return ModuleInstallState.RequireInstall;
                 }
@@ -102,8 +106,7 @@ namespace Wheatech.Modulize
                     ActivationHelper.InvokeMethod(method.Item2, environment);
                 }
             }
-            _installed = true;
-            RefreshErrors(environment);
+            AutoInstalled(environment);
         }
 
         internal void Upgrade(IActivatingEnvironment environment, Version installedVersion)

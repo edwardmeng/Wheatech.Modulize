@@ -194,6 +194,10 @@ namespace Wheatech.Modulize
             }
         }
 
+        public bool CanEnable => _enableMethod != null;
+
+        public bool CanDisable => _disableMethod != null;
+
         public FeatureErrors Errors { get; internal set; }
 
         public FeatureEnableState EnableState
@@ -201,7 +205,7 @@ namespace Wheatech.Modulize
             get
             {
                 if (_enabled) return FeatureEnableState.Enabled;
-                return _enableMethod != null || _disableMethod != null ? FeatureEnableState.RequireEnable : FeatureEnableState.AutoEnable;
+                return CanEnable || CanDisable ? FeatureEnableState.RequireEnable : FeatureEnableState.AutoEnable;
             }
         }
     }

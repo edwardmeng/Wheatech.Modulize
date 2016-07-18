@@ -123,6 +123,9 @@
   <data name="Activation_AmbiguousImplictFeatureActivator" xml:space="preserve">
     <value>There are multiple types implemented IFeatureActivator interface without FeatureId in the assembly {0}. The application cannot determine which one should be used.</value>
   </data>
+  <data name="Activation_CannotDisableFeature" xml:space="preserve">
+    <value>The feature {0} cannot be disabled. Please disable the following feature first: {1}.</value>
+  </data>
   <data name="Activation_CannotFindParameter" xml:space="preserve">
     <value>The parameter {0} of the method {1} declared in the type {2} has not been registered.</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="Activation_CannotMultipleMethod" xml:space="preserve">
     <value>There are multiple public method {0} have been found in the type {1}. The application cannot determine which one should be used to invoke.</value>
+  </data>
+  <data name="Activation_CannotUninstallModule" xml:space="preserve">
+    <value>The module {0} cannot be uninstalled. Please uninstall the following modules first: {1}.</value>
   </data>
   <data name="Activation_CircleDependency" xml:space="preserve">
     <value>The circle dependency has been detected for the features: {0}.</value>

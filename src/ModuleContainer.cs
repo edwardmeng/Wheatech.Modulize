@@ -118,16 +118,29 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(modules));
             }
             var moduleIds = modules.ToArray();
-            var moduleDescriptors = _modules.Where(module => moduleIds.Contains(module.ModuleId)).ToArray();
-            foreach (var moduleDescriptor in moduleDescriptors)
+            foreach (var module in _modules)
             {
-                if (moduleDescriptor.Errors == ModuleErrors.None && moduleDescriptor.InstallState == ModuleInstallState.RequireInstall)
+                if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.Installed)
                 {
-                    moduleDescriptor.Install(_environment);
-                    _configuration.PersistProvider.InstallModule(moduleDescriptor.ModuleId, moduleDescriptor.ModuleVersion);
+                    bool installed = false;
+                    if (!module.HasInstallers)
+                    {
+                        module.Install(_environment);
+                        installed = true;
+                    }
+                    else if (module.HasInstallers && moduleIds.Contains(module.ModuleId))
+                    {
+                        module.Install(_environment);
+                        _configuration.PersistProvider.InstallModule(module.ModuleId, module.ModuleVersion);
+                        installed = true;
+                    }
+                    if (installed)
+                    {
+                        StartupModules(new[] { module });
+                        EnableFeatures(module.Features.Select(feature => feature.FeatureId));
+                    }
                 }
             }
-            StartupModules(moduleDescriptors);
         }
 
         /// <summary>
@@ -145,16 +158,33 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(modules));
             }
             var moduleIds = modules.ToArray();
-            var moduleDescriptors = _modules.Where(module => moduleIds.Contains(module.ModuleId)).Reverse().ToArray();
-            foreach (var moduleDescriptor in moduleDescriptors)
+            var moduleDescriptors = _modules.Where(module => module.HasUninstallers && module.InstallState == ModuleInstallState.Installed && moduleIds.Contains(module.ModuleId)).Reverse().ToArray();
+            foreach (var module in moduleDescriptors)
             {
-                if (moduleDescriptor.Errors == ModuleErrors.None && moduleDescriptor.InstallState == ModuleInstallState.Installed)
+                var blockModules = module.Features
+                    .SelectMany(feature => feature.GetDependingFeatures())
+                    .Where(depending => depending.CanDisable && depending.EnableState == FeatureEnableState.Enabled && depending.Module.HasInstallers)
+                    .Select(feature => feature.Module).Distinct().ToArray();
+                if (blockModules.Length != 0)
                 {
-                    moduleDescriptor.Uninstall(_environment);
-                    _configuration.PersistProvider.UninstallModule(moduleDescriptor.ModuleId);
+                    throw new ModuleDependencyException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotUninstallModule, module.ModuleId,
+                        string.Join(", ", blockModules.Select(x => x.ModuleId))));
+                }
+            }
+            var featureIds = moduleDescriptors.SelectMany(module => module.Features.Select(feature => feature.FeatureId)).ToArray();
+            foreach (var feature in _features.Reverse())
+            {
+                if (feature.EnableState == FeatureEnableState.Enabled && featureIds.Contains(feature.FeatureId))
+                {
+                    DisableFeature(feature, true);
                 }
             }
             ShutdownModules(moduleDescriptors);
+            foreach (var moduleDescriptor in moduleDescriptors)
+            {
+                moduleDescriptor.Uninstall(_environment);
+                _configuration.PersistProvider.UninstallModule(moduleDescriptor.ModuleId);
+            }
         }
 
         /// <summary>
@@ -172,13 +202,19 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(features));
             }
             var featureIds = features.ToArray();
-            var featureDescriptors = _features.Where(feature => featureIds.Contains(feature.FeatureId)).ToArray();
-            foreach (var featureDescriptor in featureDescriptors)
+            foreach (var feature in _features)
             {
-                if (featureDescriptor.Errors == FeatureErrors.None && featureDescriptor.EnableState == FeatureEnableState.RequireEnable)
+                if (feature.Errors == FeatureErrors.None && feature.EnableState != FeatureEnableState.Enabled)
                 {
-                    featureDescriptor.Enable(_environment);
-                    _configuration.PersistProvider.EnableFeature(featureDescriptor.FeatureId);
+                    if (!feature.CanEnable)
+                    {
+                        feature.Enable(_environment);
+                    }
+                    else if (feature.CanEnable && featureIds.Contains(feature.FeatureId))
+                    {
+                        feature.Enable(_environment);
+                        _configuration.PersistProvider.EnableFeature(feature.FeatureId);
+                    }
                 }
             }
         }
@@ -198,15 +234,44 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(features));
             }
             var featureIds = features.ToArray();
-            var featureDescriptors = _features.Where(feature => featureIds.Contains(feature.FeatureId)).Reverse().ToArray();
-            foreach (var featureDescriptor in featureDescriptors)
+            var featureDescriptors = _features.Reverse().Where(feature => feature.CanDisable && feature.EnableState == FeatureEnableState.Enabled && featureIds.Contains(feature.FeatureId)).ToArray();
+            foreach (var feature in featureDescriptors)
             {
-                if (featureDescriptor.Errors == FeatureErrors.None && featureDescriptor.EnableState == FeatureEnableState.Enabled)
+                var blockFeatures = feature.GetDependingFeatures().Where(depending => depending.CanDisable && depending.EnableState == FeatureEnableState.Enabled).ToArray();
+                if (blockFeatures.Length != 0)
                 {
-                    featureDescriptor.Disable(_environment);
-                    _configuration.PersistProvider.DisableFeature(featureDescriptor.FeatureId);
+                    throw new ModuleDependencyException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotDisableFeature, feature.FeatureId,
+                        string.Join(", ", blockFeatures.Select(x => x.FeatureId))));
                 }
             }
+            foreach (var feature in featureDescriptors)
+            {
+                foreach (var depending in feature.Dependings)
+                {
+                    DisableFeature(depending, false);
+                }
+                feature.Disable(_environment);
+                _configuration.PersistProvider.DisableFeature(feature.FeatureId);
+            }
+        }
+
+        private bool DisableFeature(FeatureDescriptor feature, bool force)
+        {
+            if (feature.EnableState != FeatureEnableState.Enabled) return true;
+            if (force || !feature.CanDisable)
+            {
+                if (feature.Dependings.Any(depending => !DisableFeature(depending, force)))
+                {
+                    return false;
+                }
+                feature.Disable(_environment);
+                if (feature.CanDisable)
+                {
+                    _configuration.PersistProvider.DisableFeature(feature.FeatureId);
+                }
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -340,7 +405,7 @@ namespace Wheatech.Modulize
             {
                 if (module.Errors == ModuleErrors.None)
                 {
-                    if (module.InstallState == ModuleInstallState.RequireInstall)
+                    if (module.HasInstallers)
                     {
                         Version installVersion;
                         if (_configuration.PersistProvider.GetModuleInstalled(module.ModuleId, out installVersion))
@@ -353,7 +418,7 @@ namespace Wheatech.Modulize
                             module.AutoInstalled(environment);
                         }
                     }
-                    else if (module.InstallState == ModuleInstallState.AutoInstall)
+                    else if (module.InstallState != ModuleInstallState.Installed)
                     {
                         module.AutoInstalled(environment);
                     }
@@ -361,13 +426,10 @@ namespace Wheatech.Modulize
             }
             foreach (var feature in _features)
             {
-                if (feature.Errors == FeatureErrors.None)
+                if (feature.Errors == FeatureErrors.None &&
+                    (!feature.CanEnable || (feature.EnableState == FeatureEnableState.RequireEnable && _configuration.PersistProvider.GetFeatureEnabled(feature.FeatureId))))
                 {
-                    if (feature.EnableState == FeatureEnableState.AutoEnable ||
-                        (feature.EnableState == FeatureEnableState.RequireEnable && _configuration.PersistProvider.GetFeatureEnabled(feature.FeatureId)))
-                    {
-                        feature.Enable(environment);
-                    }
+                    feature.Enable(environment);
                 }
             }
         }

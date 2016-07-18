@@ -68,6 +68,7 @@
     <Compile Include="Activation\ModuleActivator.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
+    <Compile Include="FeatureDescriptorExtensions.cs" />
     <Compile Include="IModuleConfiguration.cs" />
     <Compile Include="IModuleContainer.cs" />
     <Compile Include="ModuleConfiguration.cs" />
@@ -76,6 +77,8 @@
     <Compile Include="ModuleContainer.cs" />
     <Compile Include="ModuleContainerExtensions.cs" />
     <Compile Include="ModuleContainerStartup.cs" />
+    <Compile Include="ModuleDependencyException.cs" />
+    <Compile Include="ModuleDescriptorExtensions.cs" />
     <Compile Include="Modulizer.cs" />
     <Compile Include="Runtime\AssemblyMatchResult.cs" />
     <Compile Include="Runtime\ConfigAssemblyLoader.cs" />

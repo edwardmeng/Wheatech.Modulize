@@ -79,6 +79,15 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The feature {0} cannot be disabled. Please disable the following feature first: {1}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotDisableFeature {
+            get {
+                return ResourceManager.GetString("Activation_CannotDisableFeature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The parameter {0} of the method {1} declared in the type {2} has not been registered. 的本地化字符串。
         /// </summary>
         internal static string Activation_CannotFindParameter {
@@ -120,6 +129,15 @@ namespace Wheatech.Modulize.Properties {
         internal static string Activation_CannotMultipleMethod {
             get {
                 return ResourceManager.GetString("Activation_CannotMultipleMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The module {0} cannot be uninstalled. Please uninstall the following modules first: {1}. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotUninstallModule {
+            get {
+                return ResourceManager.GetString("Activation_CannotUninstallModule", resourceCulture);
             }
         }
         
