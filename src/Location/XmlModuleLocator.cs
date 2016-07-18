@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace Wheatech.Modulize
 {
-    public class XmlModuleLocator : IModuleLocator
+    internal class XmlModuleLocator : IModuleLocator
     {
         private const string LocatorFilePath = "~/modules.config";
 

@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ManifestParserTest.cs" />
+    <Compile Include="MockPersistProvider.cs" />
     <Compile Include="ModuleLocatorTest.cs" />
     <Compile Include="ModulizeDiscoverTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

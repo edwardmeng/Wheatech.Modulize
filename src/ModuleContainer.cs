@@ -226,6 +226,7 @@ namespace Wheatech.Modulize
             {
                 throw new ArgumentNullException(nameof(environment));
             }
+            ValidateConfiguration();
             _environment = environment;
             _configuration.SetReadOnly(true);
             var locations = _configuration.Locators.SelectMany(locator => locator.GetLocations()).ToArray();
@@ -244,6 +245,18 @@ namespace Wheatech.Modulize
             if (_environment == null)
             {
                 throw new InvalidOperationException(Strings.Container_NotStart);
+            }
+        }
+
+        private void ValidateConfiguration()
+        {
+            if (_configuration.PersistProvider == null)
+            {
+                throw new ModuleConfigurationException(Strings.Configuration_MissingPersistProvider);
+            }
+            if (string.IsNullOrEmpty(_configuration.ShadowPath))
+            {
+                _configuration.ShadowPath = "~/Temporary Modulize Files";
             }
         }
 

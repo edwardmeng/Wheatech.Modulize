@@ -6,7 +6,7 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace Wheatech.Modulize
 {
-    public class CompressionModuleDiscover : IModuleDiscover
+    internal class CompressionModuleDiscover : IModuleDiscover
     {
         public IEnumerable<ModuleDescriptor> Discover(DiscoverContext context)
         {

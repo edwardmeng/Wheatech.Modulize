@@ -8,7 +8,7 @@ using System.Xml;
 
 namespace Wheatech.Modulize
 {
-    public class DirectoryModuleDiscover : IModuleDiscover
+    internal class DirectoryModuleDiscover : IModuleDiscover
     {
         public IEnumerable<ModuleDescriptor> Discover(DiscoverContext context)
         {

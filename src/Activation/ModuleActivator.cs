@@ -39,6 +39,10 @@ namespace Wheatech.Modulize
                         var attribute = type.GetCustomAttribute<ModuleInstallerAttribute>();
                         if (attribute != null)
                         {
+                            if ((type.IsAbstract && !type.IsSealed) || type.IsGenericTypeDefinition)
+                            {
+                                throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_InvalidModuleInstaller, TypeNameHelper.GetTypeDisplayName(type)));
+                            }
                             var installMethod = ActivationHelper.FindMethod(type, "Install", environment);
                             if (installMethod != null)
                             {

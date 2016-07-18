@@ -30,13 +30,13 @@ namespace Wheatech.Modulize.UnitTests
                 Directory.CreateDirectory(PathUtils.ResolvePath(FolderPath));
             }
             Modulizer.Reset();
-            Modulizer.Configure().UseLocator(new StaticModuleLocator("Library", FolderPath, DiscoverStrategy.Enumerate, false));
+            Modulizer.Configure().UseLocator(new StaticModuleLocator("Library", FolderPath, DiscoverStrategy.Enumerate, false)).PersistWith<MockPersistProvider>();
         }
 
         protected static void CreateAssembly(string fileName, string productName, Version version, params string[] sources)
         {
             var tempFileName = PathUtils.ResolvePath("~/" + Path.GetFileName(fileName)).Replace("/", "\\");
-            var result = new CSharpCodeProvider().CompileAssemblyFromSource(new CompilerParameters(new[] {"Wheatech.Framework.Modulize.dll"})
+            var result = new CSharpCodeProvider().CompileAssemblyFromSource(new CompilerParameters(new[] { "Wheatech.Activation.dll", "Wheatech.Modulize.dll" })
             {
                 GenerateExecutable = false,
                 GenerateInMemory = false,
@@ -125,12 +125,12 @@ namespace Wheatech.Modulize.UnitTests
                     sb.AppendLine(methodBody);
                 }
             };
-            sb.AppendLine("public void Enable(IModulizeContext context)");
+            sb.AppendLine("public void Enable(IActivatingEnvironment environment)");
             sb.AppendLine("{");
             renderMethodBody("Enable");
             sb.AppendLine("}");
 
-            sb.AppendLine("public void Disable(IModulizeContext context)");
+            sb.AppendLine("public void Disable(IActivatingEnvironment environment)");
             sb.AppendLine("{");
             renderMethodBody("Disable");
             sb.AppendLine("}");
@@ -178,7 +178,7 @@ namespace Wheatech.Modulize.UnitTests
             Name: ""Email Messaging"",
             Description: ""Email Messaging services."",
             Category: ""Messaging"",
-            Dependencies: [""Wheatech.Email 1.x"", ""Wheatech.Workflows""]
+            Dependencies: [""Wheatech.Workflows""]
         },
         ""Wheatech.Email.Workflows"":{
             Name: ""Email Workflows Activities"",
@@ -189,6 +189,7 @@ namespace Wheatech.Modulize.UnitTests
     }
 }";
             CreateDirectoryModule(manifestText, "manifest.json", "Email");
+            UnitTestStartup.Environment.UseApplicationVersion(System.Version.Parse("1.9.2"));
             Modulizer.Start(UnitTestStartup.Environment);
 
             var modules = Modulizer.GetModules();
@@ -210,7 +211,7 @@ namespace Wheatech.Modulize.UnitTests
     <features>
         <Wheatech.Email name=""Email Messaging"" category=""Messaging"">
             <description>Email Messaging services.</description>
-            <dependencies>Wheatech.Email 1.x, Wheatech.Workflows</dependencies>
+            <dependencies>Wheatech.Workflows</dependencies>
         </Wheatech.Email>
         <Wheatech.Email.Workflows name=""Email Workflows Activities"" category=""Workflows"">
             <description>Provides email sending activities.</description>
@@ -222,7 +223,8 @@ namespace Wheatech.Modulize.UnitTests
     </features>
 </module>
 ";
-            CreateDirectoryModule(manifestText, "manifest.xml", "Email");
+            CreateDirectoryModule(manifestText, "manifest.config", "Email");
+            UnitTestStartup.Environment.UseApplicationVersion(System.Version.Parse("1.9.2"));
             Modulizer.Start(UnitTestStartup.Environment);
 
             var modules = Modulizer.GetModules();
@@ -250,7 +252,7 @@ Features
         Name: Email Messaging
         Category: Messaging
         Description: Email Messaging services.
-        Dependencies: Wheatech.Email 1.x, Wheatech.Workflows
+        Dependencies: Wheatech.Workflows
     Wheatech.Email.Workflows
         Name: Email Workflows Activities
         Category: Workflows
@@ -258,6 +260,7 @@ Features
         Dependencies: Wheatech.Email 1.x, Wheatech.Workflows v1.5.x
 ";
             CreateDirectoryModule(manifestText, "manifest.txt", "Email");
+            UnitTestStartup.Environment.UseApplicationVersion(System.Version.Parse("1.9.2"));
             Modulizer.Start(UnitTestStartup.Environment);
 
             var modules = Modulizer.GetModules();
@@ -277,10 +280,8 @@ Version: 1.9.2
 Host Version: 1.9.x
 ";
             CreateDirectoryModule(manifestText, "manifest.txt", "Email");
-            var applicationVersion = UnitTestStartup.Environment.ApplicationVersion;
             UnitTestStartup.Environment.UseApplicationVersion(System.Version.Parse("2.0"));
             Modulizer.Start(UnitTestStartup.Environment);
-            UnitTestStartup.Environment.UseApplicationVersion(applicationVersion);
 
             var modules = Modulizer.GetModules();
             Assert.Equal(1, modules.Length);
@@ -400,14 +401,12 @@ Version: 1.9.2
 Assembly: Wheatech.Email
 ";
             CreateDirectoryModule(manifestText, "manifest.txt", "Email");
-            Assert.Throws<ModuleActivationException>(() => Modulizer.Start(UnitTestStartup.Environment));
+            Assert.Throws<ModuleConfigurationException>(() => Modulizer.Start(UnitTestStartup.Environment));
         }
 
         [Theory]
         [InlineData("abstract class EmailModuleManager", null)]
         [InlineData("class EmailModuleManager<T>", null)]
-        [InlineData("struct EmailModuleManager", null)]
-        [InlineData("class EmailModuleManager", "throw new Exception();")]
         public void DiscoverIncorrectModuleManager(string className, string constructor)
         {
             var manifestText =
@@ -475,14 +474,12 @@ Feature
         Assembly: Wheatech.Email
 ";
             CreateDirectoryModule(manifestText, "manifest.txt", "Email");
-            Assert.Throws<ModuleActivationException>(() => Modulizer.Start(UnitTestStartup.Environment));
+            Assert.Throws<ModuleConfigurationException>(() => Modulizer.Start(UnitTestStartup.Environment));
         }
 
         [Theory]
-        [InlineData("abstract class EmailFeatureManager", null)]
-        [InlineData("class EmailFeatureManager<T>", null)]
-        [InlineData("struct EmailFeatureManager", null)]
-        [InlineData("class EmailFeatureManager", "throw new Exception();")]
+        [InlineData("abstract class EmailFeatureActivator", null)]
+        [InlineData("class EmailFeatureActivator<T>", null)]
         public void DiscoverIncorrectFeatureManager(string className, string constructor)
         {
             var manifestText =
@@ -655,11 +652,9 @@ Version: 1.9.2
             Assert.Equal("Email Messaging services.", module.Features[0].Description);
             Assert.Equal("Messaging", module.Features[0].Category);
 
-            Assert.Equal(2, module.Features[0].Dependencies.Count);
-            Assert.Equal("Wheatech.Email", module.Features[1].Dependencies[0].FeatureId);
-            Assert.Equal(VersionComparatorFactory.Parse("1.x"), module.Features[0].Dependencies[0].Version);
-            Assert.Equal("Wheatech.Workflows", module.Features[0].Dependencies[1].FeatureId);
-            Assert.Null(module.Features[0].Dependencies[1].Version);
+            Assert.Equal(1, module.Features[0].Dependencies.Count);
+            Assert.Equal("Wheatech.Workflows", module.Features[0].Dependencies[0].FeatureId);
+            Assert.Null(module.Features[0].Dependencies[0].Version);
 
             Assert.Equal("Wheatech.Email.Workflows", module.Features[1].FeatureId);
             Assert.Equal("Email Workflows Activities", module.Features[1].FeatureName);

@@ -151,6 +151,24 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The feature activator class {0} cannot be abstract or generic. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_InvalidFeatureActivator {
+            get {
+                return ResourceManager.GetString("Activation_InvalidFeatureActivator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The module installer class {0} cannot be abstract or generic. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_InvalidModuleInstaller {
+            get {
+                return ResourceManager.GetString("Activation_InvalidModuleInstaller", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The parameter {0} of the method {1} declared in the type {2} cannot be out or ref. 的本地化字符串。
         /// </summary>
         internal static string Activation_InvalidParameter {
@@ -201,6 +219,15 @@ namespace Wheatech.Modulize.Properties {
         internal static string Collection_ReadOnly {
             get {
                 return ResourceManager.GetString("Collection_ReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The persist provider must be specified before the modulize engine started. 的本地化字符串。
+        /// </summary>
+        internal static string Configuration_MissingPersistProvider {
+            get {
+                return ResourceManager.GetString("Configuration_MissingPersistProvider", resourceCulture);
             }
         }
         

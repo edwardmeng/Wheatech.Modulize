@@ -7,7 +7,7 @@ using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
 {
-    public class TextManifestParser : IManifestParser
+    internal class TextManifestParser : IManifestParser
     {
         public ModuleDescriptor Parse(Stream stream, string moduleId)
         {

@@ -66,7 +66,8 @@ namespace Wheatech.Modulize
             {
                 return AssemblyMatchResult.Failed;
             }
-            return assemblyIdentity.Version == FileVersion || assemblyIdentity.Version == ProductVersion ? AssemblyMatchResult.Success : AssemblyMatchResult.Failed;
+            return assemblyIdentity.Version == null || assemblyIdentity.Version == FileVersion || assemblyIdentity.Version == ProductVersion ? 
+                AssemblyMatchResult.Success : AssemblyMatchResult.Failed;
         }
 
         public Assembly Load(ModuleDescriptor module)

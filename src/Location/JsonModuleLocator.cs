@@ -8,7 +8,7 @@ using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
 {
-    public class JsonModuleLocator : IModuleLocator
+    internal class JsonModuleLocator : IModuleLocator
     {
         private const string LocatorFilePath = "~/modules.json";
 

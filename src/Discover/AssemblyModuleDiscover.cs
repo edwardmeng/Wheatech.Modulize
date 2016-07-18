@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Wheatech.Modulize
 {
-    public class AssemblyModuleDiscover : IModuleDiscover
+    internal class AssemblyModuleDiscover : IModuleDiscover
     {
         public IEnumerable<ModuleDescriptor> Discover(DiscoverContext context)
         {

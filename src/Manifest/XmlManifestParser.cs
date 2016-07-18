@@ -6,7 +6,7 @@ using Wheatech.Modulize.Properties;
 
 namespace Wheatech.Modulize
 {
-    public class XmlManifestParser : IManifestParser
+    internal class XmlManifestParser : IManifestParser
     {
         public ModuleDescriptor Parse(Stream stream, string moduleId)
         {

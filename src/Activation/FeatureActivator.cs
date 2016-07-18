@@ -58,6 +58,10 @@ namespace Wheatech.Modulize
                 var attribute = type.GetCustomAttribute<FeatureActivatorAttribute>();
                 if (attribute != null)
                 {
+                    if ((type.IsAbstract && !type.IsSealed) || type.IsGenericTypeDefinition)
+                    {
+                        throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_InvalidFeatureActivator, TypeNameHelper.GetTypeDisplayName(type)));
+                    }
                     var featureId = attribute.FeatureId;
                     if (featureId == FeatureId)
                     {
