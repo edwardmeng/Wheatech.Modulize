@@ -360,23 +360,27 @@ namespace Wheatech.Modulize
             System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
         }
 
+        private void RemoveEventHandlers()
+        {
+            AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
+            System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
+            typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+              .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+        }
+
         private void OnDomainUnload(object sender, EventArgs e)
         {
             Dispose();
-            AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
         }
 
         private void OnStopListening(object sender, EventArgs e)
         {
             Dispose();
-            System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
         }
 
         private void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
         {
             Dispose();
-            typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
-                .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
         }
 
         #region Validation
@@ -623,6 +627,7 @@ namespace Wheatech.Modulize
         {
             if (_disposed) return;
             Dispose(true);
+            RemoveEventHandlers();
             GC.SuppressFinalize(this);
             _disposed = true;
         }
