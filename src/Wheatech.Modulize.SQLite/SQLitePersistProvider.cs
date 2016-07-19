@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Configuration;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using Wheatech.Modulize.PersistHelper;
 
 namespace Wheatech.Modulize.SQLite
 {
@@ -168,20 +168,9 @@ namespace Wheatech.Modulize.SQLite
             {
                 connectionString = "Data Source=:memory:;Version=3;New=True;";
             }
-            else
+            else if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
             {
-                string connectionStringName;
-                if (!TryGetConnectionName(_nameOrConnectionString, out connectionStringName) || !TryInitializeFromAppConfig(connectionStringName, out connectionString))
-                {
-                    if (!string.IsNullOrEmpty(_nameOrConnectionString) && _nameOrConnectionString.IndexOf('=') < 0)
-                    {
-                        connectionString = $"Data Source={PathUtils.ResolvePath(_nameOrConnectionString)};Version=3;";
-                    }
-                    else
-                    {
-                        connectionString = _nameOrConnectionString;
-                    }
-                }
+                connectionString = $"Data Source={PathUtils.ResolvePath(_nameOrConnectionString)};Version=3;";
             }
             EnsureDatabaseFile(connectionString);
             _connection = new SQLiteConnection(connectionString);
@@ -201,24 +190,7 @@ namespace Wheatech.Modulize.SQLite
 
         private void EnsureDatabaseFile(string connectionString)
         {
-            string dataSource = null;
-            foreach (var section in SQLiteConvert.Split(connectionString, ';'))
-            {
-                var index = section.IndexOf('=');
-                if (index != -1)
-                {
-                    var sectionName = section.Substring(0, index).Trim();
-                    if (string.Equals(sectionName, "Data Source", StringComparison.OrdinalIgnoreCase) || string.Equals(sectionName, "Data_Source", StringComparison.OrdinalIgnoreCase))
-                    {
-                        dataSource = section.Substring(index + 1).Trim();
-                        if ((dataSource[0] == '\'' && dataSource[dataSource.Length - 1] == '\'') || (dataSource[0] == '"' && dataSource[dataSource.Length - 1] == '"'))
-                        {
-                            dataSource = dataSource.Substring(1, dataSource.Length - 2);
-                        }
-                        break;
-                    }
-                }
-            }
+            string dataSource = DbHelper.ExtractConnectionStringValue(connectionString, "Data Source");
             if (!string.IsNullOrEmpty(dataSource) && !string.Equals(dataSource, ":memory:", StringComparison.OrdinalIgnoreCase))
             {
                 var filePath = PathUtils.ResolvePath(dataSource);
@@ -232,40 +204,6 @@ namespace Wheatech.Modulize.SQLite
                     SQLiteConnection.CreateFile(filePath);
                 }
             }
-        }
-
-        private bool TryInitializeFromAppConfig(string name, out string connectionString)
-        {
-            var appConfigConnection = ConfigurationManager.ConnectionStrings[name];
-            if (appConfigConnection != null)
-            {
-                connectionString = appConfigConnection.ConnectionString;
-                return true;
-            }
-            connectionString = null;
-            return false;
-        }
-
-        private static bool TryGetConnectionName(string nameOrConnectionString, out string name)
-        {
-            int index = nameOrConnectionString.IndexOf('=');
-            if (index < 0)
-            {
-                name = nameOrConnectionString;
-                return true;
-            }
-            if (nameOrConnectionString.IndexOf('=', index + 1) >= 0)
-            {
-                name = null;
-                return false;
-            }
-            if (nameOrConnectionString.Substring(0, index).Trim().Equals("name", StringComparison.OrdinalIgnoreCase))
-            {
-                name = nameOrConnectionString.Substring(index + 1).Trim();
-                return true;
-            }
-            name = null;
-            return false;
         }
 
         public void Dispose()

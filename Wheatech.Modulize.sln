@@ -11,7 +11,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize", "src\Wh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.SQLite", "src\Wheatech.Modulize.SQLite\Wheatech.Modulize.SQLite.csproj", "{C46D1927-61DC-4231-A8B3-11612349DD52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.MySQL", "src\Wheatech.Modulize.MySQL\Wheatech.Modulize.MySQL.csproj", "{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Wheatech.Modulize.PersistHelper", "src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.shproj", "{28DF6970-3312-4DC2-8FFB-1EF21B32DCC2}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{28df6970-3312-4dc2-8ffb-1ef21b32dcc2}*SharedItemsImports = 13
+		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{c46d1927-61dc-4231-a8b3-11612349dd52}*SharedItemsImports = 4
+		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{c99951a7-c514-44aa-be89-f3f4baffedbb}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -29,6 +38,10 @@ Global
 		{C46D1927-61DC-4231-A8B3-11612349DD52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C46D1927-61DC-4231-A8B3-11612349DD52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C46D1927-61DC-4231-A8B3-11612349DD52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,5 +49,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{49336DF7-D12E-4945-9657-F44408A6EDCF} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
 		{C46D1927-61DC-4231-A8B3-11612349DD52} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
+		{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
+		{28DF6970-3312-4DC2-8FFB-1EF21B32DCC2} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
 	EndGlobalSection
 EndGlobal
