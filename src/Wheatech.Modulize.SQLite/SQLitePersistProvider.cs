@@ -18,7 +18,7 @@ namespace Wheatech.Modulize.SQLite
         /// <summary>
         /// Initialize new instance of <see cref="SQLitePersistProvider"/> by using the specified connection string.
         /// </summary>
-        /// <param name="nameOrConnectionString">Either the name of connection configuration name, a connection string or a physical path of database file. </param>
+        /// <param name="nameOrConnectionString">Either the name of connection configuration, a connection string or a physical path of database file. </param>
         public SQLitePersistProvider(string nameOrConnectionString)
         {
             _nameOrConnectionString = nameOrConnectionString;
@@ -110,19 +110,18 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            object result;
             using (var command = new SQLiteCommand(_connection))
             {
                 command.CommandType = CommandType.Text;
                 command.CommandText = "SELECT COUNT(*) FROM Features WHERE ID=@ID";
                 command.Parameters.AddWithValue("ID", featureId);
-                result = command.ExecuteScalar();
+                var result = command.ExecuteScalar();
+                if (result == null || Convert.IsDBNull(result))
+                {
+                    return false;
+                }
+                return Convert.ToInt32(result) > 0;
             }
-            if (result == null || Convert.IsDBNull(result))
-            {
-                return false;
-            }
-            return Convert.ToInt32(result) > 0;
         }
 
         /// <summary>
@@ -135,21 +134,20 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            object result;
             using (var command = new SQLiteCommand(_connection))
             {
                 command.CommandType = CommandType.Text;
                 command.CommandText = "SELECT Version FROM Modules WHERE ID=@ID";
                 command.Parameters.AddWithValue("ID", moduleId);
-                result = command.ExecuteScalar();
+                var result = command.ExecuteScalar();
+                if (result == null || Convert.IsDBNull(result))
+                {
+                    version = null;
+                    return false;
+                }
+                version = new Version(Convert.ToString(result));
+                return true;
             }
-            if (result == null || Convert.IsDBNull(result))
-            {
-                version = null;
-                return false;
-            }
-            version = new Version(Convert.ToString(result));
-            return true;
         }
 
         private void ValidateDisposed()
@@ -174,12 +172,11 @@ namespace Wheatech.Modulize.SQLite
             }
             EnsureDatabaseFile(connectionString);
             _connection = new SQLiteConnection(connectionString);
-            //SQLiteConnection.CreateFile();
             _connection.Open();
             using (var command = new SQLiteCommand(_connection))
             {
                 command.CommandType = CommandType.Text;
-                command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID TEXT NOT NULL PRIMARY KEY, Version TEXT)";
+                command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID TEXT NOT NULL PRIMARY KEY, Version TEXT NOT NULL)";
                 command.ExecuteNonQuery();
 
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Features(ID TEXT NOT NULL PRIMARY KEY)";
@@ -206,6 +203,9 @@ namespace Wheatech.Modulize.SQLite
             }
         }
 
+        /// <summary>
+        /// Dispose this instance.
+        /// </summary>
         public void Dispose()
         {
             if (_connection != null)

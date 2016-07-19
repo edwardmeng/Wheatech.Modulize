@@ -623,6 +623,9 @@ namespace Wheatech.Modulize
             return sorted.ToArray();
         }
 
+        /// <summary>
+        /// Dispose this container instance.
+        /// </summary>
         public void Dispose()
         {
             if (_disposed) return;
@@ -632,6 +635,14 @@ namespace Wheatech.Modulize
             _disposed = true;
         }
 
+        /// <summary>
+        /// Dispose this container instance.
+        /// </summary>
+        /// <remarks>
+        /// This class doesn't have a finalizer, so <paramref name="disposing"/> will always be true.
+        /// </remarks>
+        /// <param name="disposing">True if being called from the IDisposable.Dispose
+        /// method, false if being called from a finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
