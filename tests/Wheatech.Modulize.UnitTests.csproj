@@ -79,6 +79,7 @@
     <Compile Include="ModulizeDiscoverTest.cs" />
     <Compile Include="ModulizeManageTest.cs" />
     <Compile Include="ModulizeReflectionTest.cs" />
+    <Compile Include="ModulizeRestoreTest.cs" />
     <Compile Include="ModulizeTestBase.cs" />
     <Compile Include="PersistProvider\MySqlConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlConnectionStringPersistProviderTest.cs" />
