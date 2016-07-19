@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C99951A7-C514-44AA-BE89-F3F4BAFFEDBB}</ProjectGuid>
+    <ProjectGuid>{D92E19E2-0EEB-4594-8BDD-810EB48499F8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Modulize.MySql</RootNamespace>
-    <AssemblyName>Wheatech.Modulize.MySql</AssemblyName>
+    <RootNamespace>Wheatech.Modulize.SqlServer</RootNamespace>
+    <AssemblyName>Wheatech.Modulize.SqlServer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -36,10 +36,6 @@
     <AssemblyOriginatorKeyFile>..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -50,21 +46,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigurationExtensions.cs" />
-    <Compile Include="MySqlPersistProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\tools\wheatech.snk">
-      <Link>Properties\wheatech.snk</Link>
-    </None>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <Compile Include="SqlServerPersistProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wheatech.Modulize\Wheatech.Modulize.csproj">
       <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
       <Name>Wheatech.Modulize</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\tools\wheatech.snk">
+      <Link>Properties\wheatech.snk</Link>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

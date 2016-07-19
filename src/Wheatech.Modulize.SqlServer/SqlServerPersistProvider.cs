@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Globalization;
-using MySql.Data.MySqlClient;
 using Wheatech.Modulize.PersistHelper;
 
-namespace Wheatech.Modulize.MySql
+namespace Wheatech.Modulize.SqlServer
 {
     /// <summary>
-    /// The MySQLPersistProvider implements the methods to use MySQL as backend of the modulize engine to persist or retrieve the modules and features activation state.
+    /// The MySQLPersistProvider implements the methods to use Microsoft SQL Server as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class MySqlPersistProvider : IPersistProvider, IDisposable
+    public class SqlServerPersistProvider : IPersistProvider
     {
         private readonly string _nameOrConnectionString;
         private bool _initialized;
-        private MySqlConnection _connection;
+        private SqlConnection _connection;
 
         /// <summary>
-        /// Initialize new instance of <see cref="MySqlPersistProvider"/> by using the specified connection string.
+        /// Initialize new instance of <see cref="SqlServerPersistProvider"/> by using the specified connection string.
         /// </summary>
         /// <param name="nameOrConnectionString">Either the name of connection configuration or a connection string. </param>
-        public MySqlPersistProvider(string nameOrConnectionString)
+        public SqlServerPersistProvider(string nameOrConnectionString)
         {
             if (string.IsNullOrEmpty(nameOrConnectionString))
             {
@@ -36,17 +36,17 @@ namespace Wheatech.Modulize.MySql
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ConnectionStringNotFound, _nameOrConnectionString));
             }
-            _connection = new MySqlConnection(connectionString);
+            _connection = new SqlConnection(connectionString);
             _connection.Open();
-            using (var command = new MySqlCommand())
+            using (var command = new SqlCommand())
             {
                 command.Connection = _connection;
                 command.CommandType = CommandType.Text;
 
-                command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID VARCHAR(256) NOT NULL PRIMARY KEY, Version VARCHAR(256) NOT NULL)";
+                command.CommandText = "IF OBJECT_ID(N'Modules',N'U') IS NULL CREATE TABLE Modules(ID VARCHAR(256) NOT NULL PRIMARY KEY, Version VARCHAR(256) NOT NULL)";
                 command.ExecuteNonQuery();
 
-                command.CommandText = "CREATE TABLE IF NOT EXISTS Features(ID VARCHAR(256) NOT NULL PRIMARY KEY)";
+                command.CommandText = "IF OBJECT_ID(N'Features',N'U') IS NULL CREATE TABLE Features(ID VARCHAR(256) NOT NULL PRIMARY KEY)";
                 command.ExecuteNonQuery();
             }
             _initialized = true;
@@ -56,7 +56,7 @@ namespace Wheatech.Modulize.MySql
         {
             if (_connection == null)
             {
-                throw new ObjectDisposedException("MySqlPersistProvider");
+                throw new ObjectDisposedException("SqlServerPersistProvider");
             }
         }
 
@@ -69,7 +69,11 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)", _connection))
+            using (var command = new SqlCommand(
+                "IF EXISTS(SELECT * FROM Modules WHERE ID=@ID)" + Environment.NewLine +
+                "    UPDATE Modules SET Version=@Version WHERE ID=@ID" + Environment.NewLine +
+                "ELSE" + Environment.NewLine +
+                "    INSERT INTO Modules(ID, Version) VALUES(@ID, @Version)", _connection))
             {
                 command.Parameters.AddWithValue("ID", moduleId);
                 command.Parameters.AddWithValue("Version", version.ToString());
@@ -85,7 +89,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
+            using (var command = new SqlCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", moduleId);
                 command.ExecuteNonQuery();
@@ -100,7 +104,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("REPLACE INTO Features SET ID=@ID", _connection))
+            using (var command = new SqlCommand("IF NOT EXISTS(SELECT * FROM Features WHERE ID=@ID) INSERT INTO Features(ID) VALUES(@ID)", _connection))
             {
                 command.Parameters.AddWithValue("ID", featureId);
                 command.ExecuteNonQuery();
@@ -115,7 +119,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("DELETE FROM Features WHERE ID=@ID", _connection))
+            using (var command = new SqlCommand("DELETE FROM Features WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", featureId);
                 command.ExecuteNonQuery();
@@ -131,7 +135,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
+            using (var command = new SqlCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", featureId);
                 var result = command.ExecuteScalar();
@@ -153,7 +157,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
+            using (var command = new SqlCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", moduleId);
                 var result = command.ExecuteScalar();
@@ -164,18 +168,6 @@ namespace Wheatech.Modulize.MySql
                 }
                 version = new Version(Convert.ToString(result));
                 return true;
-            }
-        }
-
-        /// <summary>
-        /// Dispose this instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
             }
         }
     }

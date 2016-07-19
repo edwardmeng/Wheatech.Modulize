@@ -83,6 +83,9 @@
     <Compile Include="PersistProvider\PersistProviderTestBase.cs" />
     <Compile Include="PersistProvider\SQLiteConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\SQLiteConnectionStringPersistProviderTest.cs" />
+    <Compile Include="PersistProvider\SqlServerConnectionNamePersistProviderTest.cs" />
+    <Compile Include="PersistProvider\SqlServerConnectionStringPersistProviderTest.cs" />
+    <Compile Include="PersistProvider\SqlServerPersistProviderTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PersistProvider\SQLiteMemoryPersistProviderTest.cs" />
     <Compile Include="PersistProvider\SQLitePhysicalPersistProviderTest.cs" />
@@ -103,6 +106,10 @@
     <ProjectReference Include="..\src\Wheatech.Modulize.SQLite\Wheatech.Modulize.SQLite.csproj">
       <Project>{c46d1927-61dc-4231-a8b3-11612349dd52}</Project>
       <Name>Wheatech.Modulize.SQLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\Wheatech.Modulize.SqlServer\Wheatech.Modulize.SqlServer.csproj">
+      <Project>{d92e19e2-0eeb-4594-8bdd-810eb48499f8}</Project>
+      <Name>Wheatech.Modulize.SqlServer</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
       <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
