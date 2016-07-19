@@ -126,11 +126,17 @@
   <data name="Activation_CannotDisableFeature" xml:space="preserve">
     <value>The feature {0} cannot be disabled. Please disable the following feature first: {1}.</value>
   </data>
+  <data name="Activation_CannotEnableFeature" xml:space="preserve">
+    <value>The feature {0} cannot be enabled.</value>
+  </data>
   <data name="Activation_CannotFindParameter" xml:space="preserve">
     <value>The parameter {0} of the method {1} declared in the type {2} has not been registered.</value>
   </data>
   <data name="Activation_CannotGenericMethod" xml:space="preserve">
     <value>The method {0} in the type {1} cannot be generic.</value>
+  </data>
+  <data name="Activation_CannotInstallModule" xml:space="preserve">
+    <value>The module {0} cannot be installed.</value>
   </data>
   <data name="Activation_CannotLoadFeatureEntry" xml:space="preserve">
     <value>The entry assembly of the feature {1} cannot be loaded: {0}.</value>
@@ -173,6 +179,12 @@
   </data>
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Value cannot be null or an empty string.</value>
+  </data>
+  <data name="Argument_MissingFeatures" xml:space="preserve">
+    <value>The specified features cannot be found: {0}.</value>
+  </data>
+  <data name="Argument_MissingModules" xml:space="preserve">
+    <value>The specified modules cannot be found: {0}.</value>
   </data>
   <data name="Collection_ReadOnly" xml:space="preserve">
     <value>The collection is read only.</value>

@@ -70,6 +70,7 @@
     <Compile Include="MockPersistProvider.cs" />
     <Compile Include="ModuleLocatorTest.cs" />
     <Compile Include="ModulizeDiscoverTest.cs" />
+    <Compile Include="ModulizeManageTest.cs" />
     <Compile Include="ModulizeReflectionTest.cs" />
     <Compile Include="ModulizeTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

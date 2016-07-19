@@ -94,24 +94,38 @@ namespace Wheatech.Modulize
             return activatorType;
         }
 
-        internal void Enable(IActivatingEnvironment environment)
+        internal void Enable(IActivatingEnvironment environment, ModulizeTransation transation = null, Action additionAction = null)
         {
-            if (_enableMethod != null)
-            {
-                ActivationHelper.InvokeMethod(_enableMethod, environment);
-            }
             _enabled = true;
             RefreshErrors(environment);
+            transation?.Enlist(() =>
+            {
+                if (_enableMethod != null)
+                {
+                    ActivationHelper.InvokeMethod(_enableMethod, environment);
+                }
+                additionAction?.Invoke();
+            }, () =>
+            {
+                Disable(environment);
+            });
         }
 
-        internal void Disable(IActivatingEnvironment environment)
+        internal void Disable(IActivatingEnvironment environment, ModulizeTransation transation = null, Action additionAction = null)
         {
-            if (_disableMethod != null)
-            {
-                ActivationHelper.InvokeMethod(_disableMethod, environment);
-            }
             _enabled = false;
             RefreshErrors(environment);
+            transation?.Enlist(() =>
+            {
+                if (_disableMethod != null)
+                {
+                    ActivationHelper.InvokeMethod(_disableMethod, environment);
+                }
+                additionAction?.Invoke();
+            }, () =>
+            {
+                Enable(environment);
+            });
         }
 
         internal void RefreshErrors(IActivatingEnvironment environment)

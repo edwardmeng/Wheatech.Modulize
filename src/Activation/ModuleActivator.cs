@@ -91,22 +91,25 @@ namespace Wheatech.Modulize
 
         public ModuleErrors Errors { get; internal set; }
 
-        internal void AutoInstalled(IActivatingEnvironment environment)
+        internal void Install(IActivatingEnvironment environment, ModulizeTransation transation = null, Action additionAction = null)
         {
             _installed = true;
             RefreshErrors(environment);
-        }
-
-        internal void Install(IActivatingEnvironment environment)
-        {
-            if (_installMethods != null)
+            transation?.Enlist(() =>
             {
-                foreach (var method in _installMethods)
+                if (_installMethods != null)
                 {
-                    ActivationHelper.InvokeMethod(method.Item2, environment);
+                    foreach (var method in _installMethods)
+                    {
+                        ActivationHelper.InvokeMethod(method.Item2, environment);
+                    }
                 }
-            }
-            AutoInstalled(environment);
+                additionAction?.Invoke();
+                ApplicationActivator.Startup(GetLoadedAssemblies());
+            }, () =>
+            {
+                Uninstall(environment);
+            });
         }
 
         internal void Upgrade(IActivatingEnvironment environment, Version installedVersion)
@@ -123,7 +126,28 @@ namespace Wheatech.Modulize
             }
         }
 
-        internal void Uninstall(IActivatingEnvironment environment)
+        internal void Uninstall(IActivatingEnvironment environment, ModulizeTransation transation = null, Action additionAction = null)
+        {
+            _installed = false;
+            RefreshErrors(environment);
+            transation?.Enlist(() =>
+            {
+                ApplicationActivator.Shutdown(GetLoadedAssemblies());
+                if (_uninstallMethods != null)
+                {
+                    foreach (var method in _uninstallMethods)
+                    {
+                        ActivationHelper.InvokeMethod(method, environment);
+                    }
+                }
+                additionAction?.Invoke();
+            }, () =>
+            {
+                Install(environment);
+            });
+        }
+
+        internal void ExecuteUninstall(IActivatingEnvironment environment)
         {
             if (_uninstallMethods != null)
             {
@@ -132,8 +156,6 @@ namespace Wheatech.Modulize
                     ActivationHelper.InvokeMethod(method, environment);
                 }
             }
-            _installed = false;
-            RefreshErrors(environment);
         }
 
         internal bool TryLoadAssembly(IActivatingEnvironment environment, AssemblyIdentity assemblyIdentity, out Assembly assembly)

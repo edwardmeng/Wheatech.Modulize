@@ -1,8 +1,11 @@
-﻿namespace Wheatech.Modulize
+﻿using System.Diagnostics;
+
+namespace Wheatech.Modulize
 {
     /// <summary>
     /// The descriptor of module.
     /// </summary>
+    [DebuggerDisplay("ID={ModuleId}, Version={ModuleVersion}")]
     public sealed partial class ModuleDescriptor
     {
         /// <summary>

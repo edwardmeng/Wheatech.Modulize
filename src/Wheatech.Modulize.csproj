@@ -66,6 +66,7 @@
     <Compile Include="Activation\ModuleInstallState.cs" />
     <Compile Include="Activation\ModuleInstallerAttribute.cs" />
     <Compile Include="Activation\ModuleActivator.cs" />
+    <Compile Include="Activation\ModulizeTransation.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
     <Compile Include="FeatureDescriptorExtensions.cs" />

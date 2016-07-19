@@ -88,6 +88,15 @@ namespace Wheatech.Modulize.Properties {
         }
         
         /// <summary>
+        ///   查找类似 The feature {0} cannot be enabled. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotEnableFeature {
+            get {
+                return ResourceManager.GetString("Activation_CannotEnableFeature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The parameter {0} of the method {1} declared in the type {2} has not been registered. 的本地化字符串。
         /// </summary>
         internal static string Activation_CannotFindParameter {
@@ -102,6 +111,15 @@ namespace Wheatech.Modulize.Properties {
         internal static string Activation_CannotGenericMethod {
             get {
                 return ResourceManager.GetString("Activation_CannotGenericMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The module {0} cannot be installed. 的本地化字符串。
+        /// </summary>
+        internal static string Activation_CannotInstallModule {
+            get {
+                return ResourceManager.GetString("Activation_CannotInstallModule", resourceCulture);
             }
         }
         
@@ -228,6 +246,24 @@ namespace Wheatech.Modulize.Properties {
         internal static string Argument_Cannot_Be_Null_Or_Empty {
             get {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The specified features cannot be found: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Argument_MissingFeatures {
+            get {
+                return ResourceManager.GetString("Argument_MissingFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The specified modules cannot be found: {0}. 的本地化字符串。
+        /// </summary>
+        internal static string Argument_MissingModules {
+            get {
+                return ResourceManager.GetString("Argument_MissingModules", resourceCulture);
             }
         }
         

@@ -1,8 +1,11 @@
-﻿namespace Wheatech.Modulize
+﻿using System.Diagnostics;
+
+namespace Wheatech.Modulize
 {
     /// <summary>
     /// The descriptor of features.
     /// </summary>
+    [DebuggerDisplay("ID={FeatureId}")]
     public sealed partial class FeatureDescriptor
     {
         private DependencyDescriptorCollection _dependencies;

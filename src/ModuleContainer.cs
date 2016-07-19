@@ -118,28 +118,42 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(modules));
             }
             var moduleIds = modules.ToArray();
-            foreach (var module in _modules)
+            ValidateModules(moduleIds);
+            using (var transaction = new ModulizeTransation())
             {
-                if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.Installed)
+                foreach (var module in _modules)
                 {
-                    bool installed = false;
-                    if (!module.HasInstallers)
+                    // If the specified module has errors, it cannot be installed.
+                    if (module.Errors != ModuleErrors.None && module.InstallState != ModuleInstallState.Installed && moduleIds.Contains(module.ModuleId))
                     {
-                        module.Install(_environment);
-                        installed = true;
+                        throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotInstallModule, module.ModuleId));
                     }
-                    else if (module.HasInstallers && moduleIds.Contains(module.ModuleId))
+                    // Install the specified modules and depending autoinstalled modules.
+                    if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.Installed)
                     {
-                        module.Install(_environment);
-                        _configuration.PersistProvider.InstallModule(module.ModuleId, module.ModuleVersion);
-                        installed = true;
-                    }
-                    if (installed)
-                    {
-                        StartupModules(new[] { module });
-                        EnableFeatures(module.Features.Select(feature => feature.FeatureId));
+                        bool installed = false;
+                        var moduleId = module.ModuleId;
+                        var moduleVersion = module.ModuleVersion;
+                        if (!module.HasInstallers)
+                        {
+                            module.Install(_environment, transaction);
+                            installed = true;
+                        }
+                        else if (module.HasInstallers && moduleIds.Contains(moduleId))
+                        {
+                            module.Install(_environment, transaction, () =>
+                            {
+                                _configuration.PersistProvider.InstallModule(moduleId, moduleVersion);
+                            });
+                            installed = true;
+                        }
+                        if (installed)
+                        {
+                            EnableFeatures(transaction, module.Features.Select(feature => feature.FeatureId).ToArray(), false);
+                        }
                     }
                 }
+                transaction.Complete();
             }
         }
 
@@ -158,32 +172,38 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(modules));
             }
             var moduleIds = modules.ToArray();
-            var moduleDescriptors = _modules.Where(module => module.HasUninstallers && module.InstallState == ModuleInstallState.Installed && moduleIds.Contains(module.ModuleId)).Reverse().ToArray();
-            foreach (var module in moduleDescriptors)
+            ValidateModules(moduleIds);
+            using (var transaction = new ModulizeTransation())
             {
-                var blockModules = module.Features
-                    .SelectMany(feature => feature.GetDependingFeatures())
-                    .Where(depending => depending.CanDisable && depending.EnableState == FeatureEnableState.Enabled && depending.Module.HasInstallers)
-                    .Select(feature => feature.Module).Distinct().ToArray();
-                if (blockModules.Length != 0)
+                foreach (var module in _modules.Reverse())
                 {
-                    throw new ModuleDependencyException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotUninstallModule, module.ModuleId,
-                        string.Join(", ", blockModules.Select(x => x.ModuleId))));
+                    if (module.InstallState == ModuleInstallState.Installed && module.HasUninstallers && moduleIds.Contains(module.ModuleId))
+                    {
+                        var blockModules = module.Features
+                            .SelectMany(feature => feature.GetDependingFeatures())
+                            .Where(depending => depending.CanDisable && depending.EnableState == FeatureEnableState.Enabled && depending.Module.HasInstallers)
+                            .Select(feature => feature.Module).Distinct().ToArray();
+                        if (blockModules.Length != 0)
+                        {
+                            throw new ModuleDependencyException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotUninstallModule, module.ModuleId,
+                                string.Join(", ", blockModules.Select(x => x.ModuleId))));
+                        }
+                        // Disable features underlying module before uninstall module.
+                        foreach (var feature in _features.Reverse())
+                        {
+                            if (feature.EnableState == FeatureEnableState.Enabled && module.Features.Contains(feature))
+                            {
+                                DisableFeature(transaction, feature, true);
+                            }
+                        }
+                        var moduleId = module.ModuleId;
+                        module.Uninstall(_environment, transaction, () =>
+                         {
+                             _configuration.PersistProvider.UninstallModule(moduleId);
+                         });
+                    }
                 }
-            }
-            var featureIds = moduleDescriptors.SelectMany(module => module.Features.Select(feature => feature.FeatureId)).ToArray();
-            foreach (var feature in _features.Reverse())
-            {
-                if (feature.EnableState == FeatureEnableState.Enabled && featureIds.Contains(feature.FeatureId))
-                {
-                    DisableFeature(feature, true);
-                }
-            }
-            ShutdownModules(moduleDescriptors);
-            foreach (var moduleDescriptor in moduleDescriptors)
-            {
-                moduleDescriptor.Uninstall(_environment);
-                _configuration.PersistProvider.UninstallModule(moduleDescriptor.ModuleId);
+                transaction.Complete();
             }
         }
 
@@ -202,20 +222,11 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(features));
             }
             var featureIds = features.ToArray();
-            foreach (var feature in _features)
+            ValidateFeatures(featureIds);
+            using (var transaction = new ModulizeTransation())
             {
-                if (feature.Errors == FeatureErrors.None && feature.EnableState != FeatureEnableState.Enabled)
-                {
-                    if (!feature.CanEnable)
-                    {
-                        feature.Enable(_environment);
-                    }
-                    else if (feature.CanEnable && featureIds.Contains(feature.FeatureId))
-                    {
-                        feature.Enable(_environment);
-                        _configuration.PersistProvider.EnableFeature(feature.FeatureId);
-                    }
-                }
+                EnableFeatures(transaction, featureIds, true);
+                transaction.Complete();
             }
         }
 
@@ -234,44 +245,79 @@ namespace Wheatech.Modulize
                 throw new ArgumentNullException(nameof(features));
             }
             var featureIds = features.ToArray();
-            var featureDescriptors = _features.Reverse().Where(feature => feature.CanDisable && feature.EnableState == FeatureEnableState.Enabled && featureIds.Contains(feature.FeatureId)).ToArray();
-            foreach (var feature in featureDescriptors)
+            ValidateFeatures(featureIds);
+            using (var transaction = new ModulizeTransation())
             {
-                var blockFeatures = feature.GetDependingFeatures().Where(depending => depending.CanDisable && depending.EnableState == FeatureEnableState.Enabled).ToArray();
-                if (blockFeatures.Length != 0)
+                foreach (var feature in _features.Reverse())
                 {
-                    throw new ModuleDependencyException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotDisableFeature, feature.FeatureId,
-                        string.Join(", ", blockFeatures.Select(x => x.FeatureId))));
+                    if (feature.CanDisable && feature.EnableState == FeatureEnableState.Enabled && featureIds.Contains(feature.FeatureId))
+                    {
+                        var blockFeatures = feature.GetDependingFeatures().Where(depending => depending.CanDisable && depending.EnableState == FeatureEnableState.Enabled).ToArray();
+                        if (blockFeatures.Length != 0)
+                        {
+                            throw new ModuleDependencyException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotDisableFeature, feature.FeatureId,
+                                string.Join(", ", blockFeatures.Select(x => x.FeatureId))));
+                        }
+                        foreach (var depending in feature.Dependings)
+                        {
+                            DisableFeature(transaction, depending, false);
+                        }
+                        var featureId = feature.FeatureId;
+                        feature.Disable(_environment, transaction, () =>
+                        {
+                            _configuration.PersistProvider.DisableFeature(featureId);
+                        });
+                    }
                 }
-            }
-            foreach (var feature in featureDescriptors)
-            {
-                foreach (var depending in feature.Dependings)
-                {
-                    DisableFeature(depending, false);
-                }
-                feature.Disable(_environment);
-                _configuration.PersistProvider.DisableFeature(feature.FeatureId);
+                transaction.Complete();
             }
         }
 
-        private bool DisableFeature(FeatureDescriptor feature, bool force)
+        private bool DisableFeature(ModulizeTransation transation, FeatureDescriptor feature, bool force)
         {
             if (feature.EnableState != FeatureEnableState.Enabled) return true;
             if (force || !feature.CanDisable)
             {
-                if (feature.Dependings.Any(depending => !DisableFeature(depending, force)))
+                if (feature.Dependings.Any(depending => !DisableFeature(transation, depending, force)))
                 {
                     return false;
                 }
-                feature.Disable(_environment);
+                Action callback = null;
                 if (feature.CanDisable)
                 {
-                    _configuration.PersistProvider.DisableFeature(feature.FeatureId);
+                    var featureId = feature.FeatureId;
+                    callback = () => _configuration.PersistProvider.DisableFeature(featureId);
                 }
+                feature.Disable(_environment, transation, callback);
                 return true;
             }
             return false;
+        }
+
+        private void EnableFeatures(ModulizeTransation transation, string[] features, bool force)
+        {
+            foreach (var feature in _features)
+            {
+                if (force && feature.Errors != FeatureErrors.None && feature.EnableState != FeatureEnableState.Enabled && features.Contains(feature.FeatureId))
+                {
+                    throw new ModuleActivationException(string.Format(CultureInfo.CurrentCulture, Strings.Activation_CannotEnableFeature, feature.FeatureId));
+                }
+                if (feature.Errors == FeatureErrors.None && feature.EnableState != FeatureEnableState.Enabled)
+                {
+                    if (!feature.CanEnable)
+                    {
+                        feature.Enable(_environment, transation);
+                    }
+                    else if (feature.CanEnable && features.Contains(feature.FeatureId))
+                    {
+                        var featureId = feature.FeatureId;
+                        feature.Enable(_environment, transation, () =>
+                        {
+                            _configuration.PersistProvider.EnableFeature(featureId);
+                        });
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -296,14 +342,16 @@ namespace Wheatech.Modulize
             _configuration.SetReadOnly(true);
             var locations = _configuration.Locators.SelectMany(locator => locator.GetLocations()).ToArray();
             var discovers = _configuration.Discovers.ToArray();
+            AppDomain.CurrentDomain.AssemblyResolve += OnResolveDepedencyAssembly;
             Initialize((from location in locations
                         from discover in discovers
                         from module in discover.Discover(new DiscoverContext { Location = location, Manifest = _configuration.Manifests, ShadowPath = _configuration.ShadowPath })
                         select module).ToArray(), environment);
             Recover(environment);
             StartupModules(_modules);
-            AppDomain.CurrentDomain.AssemblyResolve += OnResolveDepedencyAssembly;
         }
+
+        #region Validation
 
         private void ValidateStarted()
         {
@@ -333,6 +381,26 @@ namespace Wheatech.Modulize
             }
         }
 
+        private void ValidateModules(string[] modules)
+        {
+            var missingModuleIds = modules.Where(moduleId => _modules.All(module => module.ModuleId != moduleId)).ToArray();
+            if (missingModuleIds.Length > 0)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Argument_MissingModules, string.Join(", ", missingModuleIds)));
+            }
+        }
+
+        private void ValidateFeatures(string[] features)
+        {
+            var missingFeatureIds = features.Where(featureId => _features.All(feature => feature.FeatureId != featureId)).ToArray();
+            if (missingFeatureIds.Length > 0)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Argument_MissingFeatures, string.Join(", ", missingFeatureIds)));
+            }
+        }
+
+        #endregion
+
         private Assembly OnResolveDepedencyAssembly(object sender, ResolveEventArgs args)
         {
             // If the argument name contains directory seperator, indicates it is an physical path or uri path.
@@ -347,14 +415,7 @@ namespace Wheatech.Modulize
             }
             var assembly = ActivationHelper.GetDomainAssembly(_environment, identity);
             if (assembly != null) return assembly;
-            foreach (var module in _modules)
-            {
-                if (module.TryLoadAssembly(_environment, identity, out assembly))
-                {
-                    return assembly;
-                }
-            }
-            return null;
+            return _modules.Any(module => module.TryLoadAssembly(_environment, identity, out assembly)) ? assembly : null;
         }
 
         private void Initialize(ModuleDescriptor[] modules, IActivatingEnvironment environment)
@@ -390,8 +451,8 @@ namespace Wheatech.Modulize
 
             foreach (var module in modules)
             {
-                module.RefreshErrors(environment);
                 module.Initialize(environment);
+                module.RefreshErrors(environment);
                 foreach (var feature in module.Features)
                 {
                     feature.Initialize(environment);
@@ -415,12 +476,12 @@ namespace Wheatech.Modulize
                                 module.Upgrade(environment, installVersion);
                                 _configuration.PersistProvider.InstallModule(module.ModuleId, module.ModuleVersion);
                             }
-                            module.AutoInstalled(environment);
+                            module.Install(environment);
                         }
                     }
                     else if (module.InstallState != ModuleInstallState.Installed)
                     {
-                        module.AutoInstalled(environment);
+                        module.Install(environment);
                     }
                 }
             }
@@ -436,12 +497,17 @@ namespace Wheatech.Modulize
 
         private void StartupModules(IEnumerable<ModuleDescriptor> modules)
         {
+            var assemblies = new List<Assembly>();
             foreach (var module in modules)
             {
                 if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.RequireInstall)
                 {
-                    ApplicationActivator.Startup(module.GetLoadedAssemblies());
+                    assemblies.AddRange(module.GetLoadedAssemblies());
                 }
+            }
+            if (assemblies.Count > 0)
+            {
+                ApplicationActivator.Startup(assemblies.Distinct().ToArray());
             }
         }
 
@@ -458,14 +524,7 @@ namespace Wheatech.Modulize
 
         private IEnumerable<DependentFeature> CreateFeatureGraph(IEnumerable<ModuleDescriptor> modules)
         {
-            var nodes = new Dictionary<string, DependentFeature>();
-            foreach (var module in modules)
-            {
-                foreach (var feature in module.Features)
-                {
-                    nodes.Add(feature.FeatureId, new DependentFeature(feature));
-                }
-            }
+            var nodes = modules.SelectMany(module => module.Features).ToDictionary(feature => feature.FeatureId, feature => new DependentFeature(feature));
             foreach (var feature in nodes.Values)
             {
                 foreach (var dependency in feature.Feature.Dependencies)
