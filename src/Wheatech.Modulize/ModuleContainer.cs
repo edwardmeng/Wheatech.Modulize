@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Web;
+using System.Web.Compilation;
 using Wheatech.Activation;
 using Wheatech.Modulize.Properties;
 
@@ -350,6 +352,31 @@ namespace Wheatech.Modulize
                         select module).ToArray(), environment);
             Recover(environment);
             StartupModules(_modules);
+
+            // Attach events to shutdown the application.
+            AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+            typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+                .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
+            System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
+        }
+
+        private void OnDomainUnload(object sender, EventArgs e)
+        {
+            Dispose();
+            AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
+        }
+
+        private void OnStopListening(object sender, EventArgs e)
+        {
+            Dispose();
+            System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
+        }
+
+        private void OnAppDomainShutdown(object sender, BuildManagerHostUnloadEventArgs args)
+        {
+            Dispose();
+            typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+                .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
         }
 
         #region Validation
