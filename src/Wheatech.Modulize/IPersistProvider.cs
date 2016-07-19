@@ -1,5 +1,8 @@
 ﻿namespace Wheatech.Modulize
 {
+    /// <summary>
+    /// The interface defines the methods as backend of the modulize engine to persist or retrieve the modules and features activation state.
+    /// </summary>
     public interface IPersistProvider
     {
         /// <summary>

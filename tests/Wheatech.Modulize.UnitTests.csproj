@@ -83,7 +83,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Wheatech.Modulize.csproj">
+    <ProjectReference Include="..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
       <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
       <Name>Wheatech.Modulize</Name>
     </ProjectReference>

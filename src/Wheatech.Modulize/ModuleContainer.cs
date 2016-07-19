@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -462,6 +463,7 @@ namespace Wheatech.Modulize
 
         private void Recover(IActivatingEnvironment environment)
         {
+            var enabledFeatures = new ConcurrentDictionary<string, bool>();
             foreach (var module in _modules)
             {
                 if (module.Errors == ModuleErrors.None)
@@ -483,14 +485,16 @@ namespace Wheatech.Modulize
                     {
                         module.Install(environment);
                     }
-                }
-            }
-            foreach (var feature in _features)
-            {
-                if (feature.Errors == FeatureErrors.None &&
-                    (!feature.CanEnable || (feature.EnableState == FeatureEnableState.RequireEnable && _configuration.PersistProvider.GetFeatureEnabled(feature.FeatureId))))
-                {
-                    feature.Enable(environment);
+                    foreach (var feature in _features)
+                    {
+                        if (feature.Errors == FeatureErrors.None &&
+                            (!feature.CanEnable ||
+                             (feature.EnableState == FeatureEnableState.RequireEnable &&
+                              enabledFeatures.GetOrAdd(feature.FeatureId, featureId => _configuration.PersistProvider.GetFeatureEnabled(featureId)))))
+                        {
+                            feature.Enable(environment);
+                        }
+                    }
                 }
             }
         }

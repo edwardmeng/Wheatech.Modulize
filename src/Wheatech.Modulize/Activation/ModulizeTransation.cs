@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 
 namespace Wheatech.Modulize
 {
@@ -9,6 +10,7 @@ namespace Wheatech.Modulize
         private bool _completed;
         private List<Action> _commitActions = new List<Action>();
         private List<Action> _rollbackActions = new List<Action>();
+        private TransactionScope _transactionScope = new TransactionScope(TransactionScopeOption.Required);
 
         public void Complete()
         {
@@ -25,6 +27,7 @@ namespace Wheatech.Modulize
                     {
                         commitAction();
                     }
+                    _transactionScope.Complete();
                 }
                 catch (Exception)
                 {
@@ -57,6 +60,8 @@ namespace Wheatech.Modulize
             _commitActions = null;
             _rollbackActions.Clear();
             _rollbackActions = null;
+            _transactionScope.Dispose();
+            _transactionScope = null;
         }
 
         public void Enlist(Action commitAction, Action rollbackAction)

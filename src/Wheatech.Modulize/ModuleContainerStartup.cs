@@ -10,7 +10,13 @@ namespace Wheatech.Modulize
         public ModuleContainerStartup(IActivatingEnvironment environment)
         {
             environment.Use(Modulizer.DefaultContainer);
-            environment.Use(Modulizer.DefaultContainer.Configure());
+            var configuration = Modulizer.DefaultContainer.Configure();
+            environment.Use(configuration);
+            var persistProvider = ((ModuleConfiguration)configuration).PersistProvider;
+            if (persistProvider != null)
+            {
+                environment.Use(persistProvider);
+            }
         }
     }
 }
