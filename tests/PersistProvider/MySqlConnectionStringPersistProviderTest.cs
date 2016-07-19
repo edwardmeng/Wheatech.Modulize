@@ -1,4 +1,5 @@
-﻿using Wheatech.Modulize.MySql;
+﻿using System.Configuration;
+using Wheatech.Modulize.MySql;
 
 namespace Wheatech.Modulize.UnitTests
 {
@@ -6,7 +7,7 @@ namespace Wheatech.Modulize.UnitTests
     {
         protected override IPersistProvider CreatePersistProvider()
         {
-            return new MySqlPersistProvider("Server=localhost;Database=Modulize;Uid=root;Pwd=root;");
+            return new MySqlPersistProvider(ConfigurationManager.ConnectionStrings["MySql"].ConnectionString);
         }
     }
 }

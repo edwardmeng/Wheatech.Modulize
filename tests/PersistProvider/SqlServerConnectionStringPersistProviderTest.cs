@@ -1,4 +1,5 @@
-﻿using Wheatech.Modulize.SqlServer;
+﻿using System.Configuration;
+using Wheatech.Modulize.SqlServer;
 
 namespace Wheatech.Modulize.UnitTests
 {
@@ -6,7 +7,7 @@ namespace Wheatech.Modulize.UnitTests
     {
         protected override IPersistProvider CreatePersistProvider()
         {
-            return new SqlServerPersistProvider("Server=localhost;Database=Modulize;User Id=sa;Password=sa;");
+            return new SqlServerPersistProvider(ConfigurationManager.ConnectionStrings["SqlServer"].ConnectionString);
         }
     }
 }

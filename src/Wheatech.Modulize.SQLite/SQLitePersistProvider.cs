@@ -40,10 +40,8 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand(_connection))
+            using (var command = new SQLiteCommand("INSERT OR REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)", _connection))
             {
-                command.CommandType = CommandType.Text;
-                command.CommandText = "INSERT OR REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)";
                 command.Parameters.AddWithValue("ID", moduleId);
                 command.Parameters.AddWithValue("Version", version.ToString());
                 command.ExecuteNonQuery();
@@ -58,10 +56,8 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand(_connection))
+            using (var command = new SQLiteCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
             {
-                command.CommandType = CommandType.Text;
-                command.CommandText = "DELETE FROM Modules WHERE ID=@ID";
                 command.Parameters.AddWithValue("ID", moduleId);
                 command.ExecuteNonQuery();
             }
@@ -75,10 +71,8 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand(_connection))
+            using (var command = new SQLiteCommand("INSERT OR REPLACE INTO Features(ID) VALUES(@ID)", _connection))
             {
-                command.CommandType = CommandType.Text;
-                command.CommandText = "INSERT OR REPLACE INTO Features(ID) VALUES(@ID)";
                 command.Parameters.AddWithValue("ID", featureId);
                 command.ExecuteNonQuery();
             }
@@ -92,10 +86,8 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand(_connection))
+            using (var command = new SQLiteCommand("DELETE FROM Features WHERE ID=@ID", _connection))
             {
-                command.CommandType = CommandType.Text;
-                command.CommandText = "DELETE FROM Features WHERE ID=@ID";
                 command.Parameters.AddWithValue("ID", featureId);
                 command.ExecuteNonQuery();
             }
@@ -110,10 +102,8 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand(_connection))
+            using (var command = new SQLiteCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
             {
-                command.CommandType = CommandType.Text;
-                command.CommandText = "SELECT COUNT(*) FROM Features WHERE ID=@ID";
                 command.Parameters.AddWithValue("ID", featureId);
                 var result = command.ExecuteScalar();
                 if (result == null || Convert.IsDBNull(result))
@@ -134,10 +124,8 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand(_connection))
+            using (var command = new SQLiteCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
             {
-                command.CommandType = CommandType.Text;
-                command.CommandText = "SELECT Version FROM Modules WHERE ID=@ID";
                 command.Parameters.AddWithValue("ID", moduleId);
                 var result = command.ExecuteScalar();
                 if (result == null || Convert.IsDBNull(result))

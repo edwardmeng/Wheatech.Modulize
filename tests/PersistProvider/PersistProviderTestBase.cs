@@ -128,7 +128,9 @@ Assembly: Wheatech.Email.Sender
         public void ModuleInstalled()
         {
             string moduleId = Guid.NewGuid().ToString();
+            string moduleId2 = Guid.NewGuid().ToString();
             _persistProvider.InstallModule(moduleId,new Version("1.0.5"));
+            _persistProvider.InstallModule(moduleId2, new Version("1.0.6"));
             Version installVersion;
             Assert.True(_persistProvider.GetModuleInstalled(moduleId, out installVersion));
             Assert.Equal(new Version("1.0.5"), installVersion);

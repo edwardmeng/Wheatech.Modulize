@@ -39,6 +39,9 @@
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="Npgsql">
+      <HintPath>..\packages\Npgsql.3.1.6\lib\net451\Npgsql.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -80,6 +83,9 @@
     <Compile Include="PersistProvider\MySqlConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlConnectionStringPersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlPersistProviderTestBase.cs" />
+    <Compile Include="PersistProvider\NpgsqlConnectionNamePersistProviderTest.cs" />
+    <Compile Include="PersistProvider\NpgsqlConnectionStringPersistProviderTest.cs" />
+    <Compile Include="PersistProvider\NpgsqlPersistProviderTestBase.cs" />
     <Compile Include="PersistProvider\PersistProviderTestBase.cs" />
     <Compile Include="PersistProvider\SQLiteConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\SQLiteConnectionStringPersistProviderTest.cs" />
@@ -102,6 +108,10 @@
     <ProjectReference Include="..\src\Wheatech.Modulize.MySql\Wheatech.Modulize.MySql.csproj">
       <Project>{c99951a7-c514-44aa-be89-f3f4baffedbb}</Project>
       <Name>Wheatech.Modulize.MySql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\Wheatech.Modulize.Npgsql\Wheatech.Modulize.Npgsql.csproj">
+      <Project>{5b29d8e9-ee57-4b3f-8e34-4f5edeb0b363}</Project>
+      <Name>Wheatech.Modulize.Npgsql</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\Wheatech.Modulize.SQLite\Wheatech.Modulize.SQLite.csproj">
       <Project>{c46d1927-61dc-4231-a8b3-11612349dd52}</Project>
