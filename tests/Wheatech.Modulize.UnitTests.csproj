@@ -36,6 +36,10 @@
     <AssemblyOriginatorKeyFile>..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FirebirdSql.Data.FirebirdClient, Version=5.0.5.0, Culture=neutral, PublicKeyToken=3750abcc3150b00c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FirebirdSql.Data.FirebirdClient.5.0.5\lib\net45\FirebirdSql.Data.FirebirdClient.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
@@ -81,6 +85,9 @@
     <Compile Include="ModulizeReflectionTest.cs" />
     <Compile Include="ModulizeRestoreTest.cs" />
     <Compile Include="ModulizeTestBase.cs" />
+    <Compile Include="PersistProvider\FirebirdConnectionNamePersistProviderTest.cs" />
+    <Compile Include="PersistProvider\FirebirdConnectionStringPersistProvider.cs" />
+    <Compile Include="PersistProvider\FirebirdPersistProviderTestBase.cs" />
     <Compile Include="PersistProvider\MySqlConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlConnectionStringPersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlPersistProviderTestBase.cs" />
@@ -106,6 +113,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\src\Wheatech.Modulize.Firebird\Wheatech.Modulize.Firebird.csproj">
+      <Project>{bbdb050e-98a0-47f4-8806-36413899167a}</Project>
+      <Name>Wheatech.Modulize.Firebird</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\Wheatech.Modulize.MySql\Wheatech.Modulize.MySql.csproj">
       <Project>{c99951a7-c514-44aa-be89-f3f4baffedbb}</Project>
       <Name>Wheatech.Modulize.MySql</Name>

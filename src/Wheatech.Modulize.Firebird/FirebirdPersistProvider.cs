@@ -1,25 +1,24 @@
 ﻿using System;
-using System.Data;
-using System.Globalization;
-using MySql.Data.MySqlClient;
+using System.IO;
+using FirebirdSql.Data.FirebirdClient;
 using Wheatech.Modulize.PersistHelper;
 
-namespace Wheatech.Modulize.MySql
+namespace Wheatech.Modulize.Firebird
 {
     /// <summary>
-    /// The MySQLPersistProvider implements the methods to use MySQL as backend of the modulize engine to persist or retrieve the modules and features activation state.
+    /// The FirebirdPersistProvider implements the methods to use Firebird as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class MySqlPersistProvider : IPersistProvider, IDisposable
+    public class FirebirdPersistProvider : IPersistProvider
     {
         private readonly string _nameOrConnectionString;
         private bool _initialized;
-        private MySqlConnection _connection;
+        private FbConnection _connection;
 
         /// <summary>
-        /// Initialize new instance of <see cref="MySqlPersistProvider"/> by using the specified connection string.
+        /// Initialize new instance of <see cref="FirebirdPersistProvider"/> by using the specified connection string.
         /// </summary>
         /// <param name="nameOrConnectionString">Either the name of connection configuration or a connection string. </param>
-        public MySqlPersistProvider(string nameOrConnectionString)
+        public FirebirdPersistProvider(string nameOrConnectionString)
         {
             if (string.IsNullOrEmpty(nameOrConnectionString))
             {
@@ -34,18 +33,26 @@ namespace Wheatech.Modulize.MySql
             string connectionString;
             if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ConnectionStringNotFound, _nameOrConnectionString));
+                connectionString = $"DataSource=localhost;Database={PathUtils.ResolvePath(_nameOrConnectionString)};ServerType=0;";
             }
-            _connection = new MySqlConnection(connectionString);
+            EnsureDatabaseFile(connectionString);
+            _connection = new FbConnection(connectionString);
             _connection.Open();
-            using (var command = new MySqlCommand())
+            using (var command = new FbCommand())
             {
                 command.Connection = _connection;
-
-                command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID VARCHAR(256) NOT NULL PRIMARY KEY, Version VARCHAR(256) NOT NULL)";
+                command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
+                                      "IF (NOT EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'MODULES'))" + Environment.NewLine +
+                                      "THEN" + Environment.NewLine +
+                                      "EXECUTE STATEMENT 'CREATE TABLE MODULES(ID VARCHAR(256), VERSION VARCHAR(256))';" + Environment.NewLine +
+                                      "END";
                 command.ExecuteNonQuery();
 
-                command.CommandText = "CREATE TABLE IF NOT EXISTS Features(ID VARCHAR(256) NOT NULL PRIMARY KEY)";
+                command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
+                                      "IF (NOT EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'FEATURES'))" + Environment.NewLine +
+                                      "THEN" + Environment.NewLine +
+                                      "EXECUTE STATEMENT 'CREATE TABLE FEATURES(ID VARCHAR(256))';" + Environment.NewLine +
+                                      "END";
                 command.ExecuteNonQuery();
             }
             _initialized = true;
@@ -55,7 +62,26 @@ namespace Wheatech.Modulize.MySql
         {
             if (_connection == null)
             {
-                throw new ObjectDisposedException("MySqlPersistProvider");
+                throw new ObjectDisposedException("FirebirdPersistProvider");
+            }
+        }
+
+        private void EnsureDatabaseFile(string connectionString)
+        {
+            string dataSource = DbHelper.ExtractConnectionStringValue(connectionString, "database") ?? DbHelper.ExtractConnectionStringValue(connectionString, "initial catalog");
+            if (!string.IsNullOrEmpty(dataSource) && dataSource.IndexOf('.') > 0)
+            {
+                //var filePath = PathUtils.ResolvePath(dataSource);
+                //if (!File.Exists(filePath))
+                //{
+                //    var dirPath = Path.GetDirectoryName(filePath);
+                //    if (!string.IsNullOrEmpty(dirPath) && !Directory.Exists(dirPath))
+                //    {
+                //        Directory.CreateDirectory(dirPath);
+                //    }
+                //    FbConnection.CreateDatabase(connectionString, false);
+                //}
+                FbConnection.CreateDatabase(connectionString, false);
             }
         }
 
@@ -68,7 +94,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)", _connection))
+            using (var command = new FbCommand("UPDATE OR INSERT INTO MODULES(ID, VERSION) VALUES(@ID, @Version)", _connection))
             {
                 command.Parameters.AddWithValue("ID", moduleId);
                 command.Parameters.AddWithValue("Version", version.ToString());
@@ -84,7 +110,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
+            using (var command = new FbCommand("DELETE FROM MODULES WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", moduleId);
                 command.ExecuteNonQuery();
@@ -99,7 +125,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("REPLACE INTO Features SET ID=@ID", _connection))
+            using (var command = new FbCommand("UPDATE OR INSERT INTO FEATURES(ID) VALUES(@ID)", _connection))
             {
                 command.Parameters.AddWithValue("ID", featureId);
                 command.ExecuteNonQuery();
@@ -114,7 +140,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("DELETE FROM Features WHERE ID=@ID", _connection))
+            using (var command = new FbCommand("DELETE FROM FEATURES WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", featureId);
                 command.ExecuteNonQuery();
@@ -130,7 +156,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
+            using (var command = new FbCommand("SELECT COUNT(*) FROM FEATURES WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", featureId);
                 var result = command.ExecuteScalar();
@@ -152,7 +178,7 @@ namespace Wheatech.Modulize.MySql
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new MySqlCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
+            using (var command = new FbCommand("SELECT VERSION FROM MODULES WHERE ID=@ID", _connection))
             {
                 command.Parameters.AddWithValue("ID", moduleId);
                 var result = command.ExecuteScalar();
@@ -163,18 +189,6 @@ namespace Wheatech.Modulize.MySql
                 }
                 version = new Version(Convert.ToString(result));
                 return true;
-            }
-        }
-
-        /// <summary>
-        /// Dispose this instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
             }
         }
     }
