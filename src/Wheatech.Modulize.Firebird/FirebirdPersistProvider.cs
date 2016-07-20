@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using FirebirdSql.Data.FirebirdClient;
 using Wheatech.Modulize.PersistHelper;
@@ -33,7 +34,7 @@ namespace Wheatech.Modulize.Firebird
             string connectionString;
             if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
             {
-                connectionString = $"database={PathUtils.ResolvePath(_nameOrConnectionString)};ServerType=1;";
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ConnectionStringNotFound, _nameOrConnectionString));
             }
             EnsureDatabaseFile(ref connectionString);
             _connection = new FbConnection(connectionString);
