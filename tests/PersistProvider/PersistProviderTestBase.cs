@@ -10,7 +10,7 @@ namespace Wheatech.Modulize.UnitTests
 {
     public abstract class PersistProviderTestBase : ModulizeTestBase
     {
-        private readonly IPersistProvider _persistProvider;
+        private IPersistProvider _persistProvider;
 
         protected PersistProviderTestBase()
         {
@@ -33,7 +33,7 @@ namespace Wheatech.Modulize.UnitTests
         {
             string moduleId = Guid.NewGuid().ToString();
             string moduleId2 = Guid.NewGuid().ToString();
-            _persistProvider.InstallModule(moduleId,new Version("1.0.5"));
+            _persistProvider.InstallModule(moduleId, new Version("1.0.5"));
             _persistProvider.InstallModule(moduleId2, new Version("1.0.6"));
             Version installVersion;
             Assert.True(_persistProvider.GetModuleInstalled(moduleId, out installVersion));
@@ -68,6 +68,19 @@ namespace Wheatech.Modulize.UnitTests
             Assert.True(_persistProvider.GetFeatureEnabled(featureId));
             _persistProvider.DisableFeature(featureId);
             Assert.False(_persistProvider.GetFeatureEnabled(featureId));
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                if (_persistProvider != null)
+                {
+                    (_persistProvider as IDisposable)?.Dispose();
+                    _persistProvider = null;
+                }
+            }
         }
     }
 }

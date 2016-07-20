@@ -25,6 +25,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{28df6970-3312-4dc2-8ffb-1ef21b32dcc2}*SharedItemsImports = 13
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{5b29d8e9-ee57-4b3f-8e34-4f5edeb0b363}*SharedItemsImports = 4
+		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{6fa440e7-b2f4-4c5f-bc1f-0467a132cb52}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{bbdb050e-98a0-47f4-8806-36413899167a}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{c46d1927-61dc-4231-a8b3-11612349dd52}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{c99951a7-c514-44aa-be89-f3f4baffedbb}*SharedItemsImports = 4

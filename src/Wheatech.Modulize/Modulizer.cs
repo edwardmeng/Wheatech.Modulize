@@ -1,13 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Wheatech.Activation;
 
 namespace Wheatech.Modulize
 {
     public static class Modulizer
     {
-        private static readonly System.Lazy<IModuleContainer> _container = new System.Lazy<IModuleContainer>(() => new ModuleContainer());
+        private static System.Lazy<IModuleContainer> _container;
 
-        internal static IModuleContainer DefaultContainer => _container.Value;
+        internal static IModuleContainer DefaultContainer
+        {
+            get
+            {
+                if (_container == null)
+                {
+                    _container = new System.Lazy<IModuleContainer>(() => new ModuleContainer());
+                }
+                return _container.Value;
+            }
+        }
 
         public static IModuleConfiguration Configure()
         {
@@ -71,7 +82,11 @@ namespace Wheatech.Modulize
 
         internal static void Reset()
         {
-            (DefaultContainer as ModuleContainer)?.Reset();
+            if (_container != null && _container.IsValueCreated)
+            {
+                ((IDisposable)_container.Value).Dispose();
+                _container = null;
+            }
         }
     }
 }

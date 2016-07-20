@@ -88,6 +88,7 @@
     <Compile Include="PersistProvider\FirebirdConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\FirebirdConnectionStringPersistProvider.cs" />
     <Compile Include="PersistProvider\FirebirdPersistProviderTestBase.cs" />
+    <Compile Include="PersistProvider\FirebirdPhysicalPersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlConnectionNamePersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlConnectionStringPersistProviderTest.cs" />
     <Compile Include="PersistProvider\MySqlPersistProviderTestBase.cs" />
@@ -138,9 +139,11 @@
       <Name>Wheatech.Modulize</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(SolutionDir)lib\SQLite.Interop.dll $(TargetDir)SQLite.Interop.dll /Y</PostBuildEvent>
+    <PostBuildEvent>copy $(SolutionDir)lib\SQLite.Interop.dll $(TargetDir)SQLite.Interop.dll /Y
+copy $(SolutionDir)lib\fbembed.dll $(TargetDir)fbembed.dll /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

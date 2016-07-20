@@ -1,14 +1,14 @@
 ﻿using System.IO;
-using Wheatech.Modulize.SQLite;
+using Wheatech.Modulize.Firebird;
 
 namespace Wheatech.Modulize.UnitTests
 {
-    public class SQLitePhysicalPersistProviderTest : PersistProviderTestBase
+    public class FirebirdPhysicalPersistProviderTest: PersistProviderTestBase
     {
-        private const string _filePath = "~/App_Data/modulize.db";
+        private const string _filePath = "~/App_Data/modulize.fdb";
         protected override IPersistProvider CreatePersistProvider()
         {
-            return new SQLitePersistProvider(_filePath);
+            return new FirebirdPersistProvider(_filePath);
         }
 
         protected override void Dispose(bool disposing)

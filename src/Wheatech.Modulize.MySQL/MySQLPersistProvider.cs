@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Globalization;
 using MySql.Data.MySqlClient;
 using Wheatech.Modulize.PersistHelper;

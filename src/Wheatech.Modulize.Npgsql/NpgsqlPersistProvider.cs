@@ -9,7 +9,7 @@ namespace Wheatech.Modulize.Npgsql
     /// <summary>
     /// The NpgsqlPersistProvider implements the methods to use PostgreSQL as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class NpgsqlPersistProvider : IPersistProvider
+    public class NpgsqlPersistProvider : IPersistProvider, IDisposable
     {
         private readonly string _nameOrConnectionString;
         private bool _initialized;
@@ -164,6 +164,18 @@ namespace Wheatech.Modulize.Npgsql
                 }
                 version = new Version(Convert.ToString(result));
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_connection != null)
+            {
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }

@@ -1,33 +1,45 @@
 ﻿using System;
 using System.Configuration;
 using FirebirdSql.Data.FirebirdClient;
+using Wheatech.Modulize.PersistHelper;
 
 namespace Wheatech.Modulize.UnitTests
 {
-    public abstract class FirebirdPersistProviderTestBase : PersistProviderTestBase, IDisposable
+    public abstract class FirebirdPersistProviderTestBase : PersistProviderTestBase
     {
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            using (var connection = new FbConnection(ConfigurationManager.ConnectionStrings["Firebird"].ConnectionString))
+            base.Dispose(disposing);
+            if (disposing)
             {
-                connection.Open();
-                using (var command = new FbCommand())
+                using (var connection = new FbConnection(DbHelper.ReplaceConnectionStringValue(ConfigurationManager.ConnectionStrings["Firebird"].ConnectionString, (name, value) =>
                 {
-                    command.Connection = connection;
+                    if (string.Equals(name, "database", StringComparison.OrdinalIgnoreCase) || string.Equals(name, "initial catalog", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return PathUtils.ResolvePath(value);
+                    }
+                    return value;
+                })))
+                {
+                    connection.Open();
+                    using (var command = new FbCommand())
+                    {
+                        command.Connection = connection;
 
-                    command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
-                                          "IF (EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'MODULES'))" + Environment.NewLine +
-                                          "THEN" + Environment.NewLine +
-                                          "EXECUTE STATEMENT 'DROP TABLE MODULES';" + Environment.NewLine +
-                                          "END";
-                    command.ExecuteNonQuery();
+                        command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
+                                              "IF (EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'MODULES'))" + Environment.NewLine +
+                                              "THEN" + Environment.NewLine +
+                                              "EXECUTE STATEMENT 'DELETE FROM MODULES';" + Environment.NewLine +
+                                              "END";
+                        command.ExecuteNonQuery();
 
-                    command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
-                                          "IF (EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'FEATURES'))" + Environment.NewLine +
-                                          "THEN" + Environment.NewLine +
-                                          "EXECUTE STATEMENT 'DROP TABLE FEATURES';" + Environment.NewLine +
-                                          "END";
-                    command.ExecuteNonQuery();
+                        command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
+                                              "IF (EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'FEATURES'))" + Environment.NewLine +
+                                              "THEN" + Environment.NewLine +
+                                              "EXECUTE STATEMENT 'DELETE FROM FEATURES';" + Environment.NewLine +
+                                              "END";
+                        command.ExecuteNonQuery();
+                    }
                 }
             }
         }

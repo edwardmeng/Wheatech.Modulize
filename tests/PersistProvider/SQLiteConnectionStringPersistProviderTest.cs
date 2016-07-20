@@ -6,17 +6,22 @@ namespace Wheatech.Modulize.UnitTests
     public class SQLiteConnectionStringPersistProviderTest : PersistProviderTestBase
     {
         private readonly string _filePath = PathUtils.ResolvePath("~/App_Data/modulize.db");
-        public SQLiteConnectionStringPersistProviderTest()
-        {
-            if (File.Exists(_filePath))
-            {
-                File.Delete(_filePath);
-            }
-        }
 
         protected override IPersistProvider CreatePersistProvider()
         {
             return new SQLitePersistProvider($"Data Source={_filePath};Version=3;");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                if (File.Exists(_filePath))
+                {
+                    File.Delete(_filePath);
+                }
+            }
         }
     }
 }

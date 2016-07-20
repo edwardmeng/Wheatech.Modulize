@@ -1,25 +1,28 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using Npgsql;
 
 namespace Wheatech.Modulize.UnitTests
 {
-    public abstract class NpgsqlPersistProviderTestBase : PersistProviderTestBase, IDisposable
+    public abstract class NpgsqlPersistProviderTestBase : PersistProviderTestBase
     {
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["PostgreSql"].ConnectionString))
+            base.Dispose(disposing);
+            if (disposing)
             {
-                connection.Open();
-                using (var command = new NpgsqlCommand())
+                using (var connection = new NpgsqlConnection(ConfigurationManager.ConnectionStrings["PostgreSql"].ConnectionString))
                 {
-                    command.Connection = connection;
+                    connection.Open();
+                    using (var command = new NpgsqlCommand())
+                    {
+                        command.Connection = connection;
 
-                    command.CommandText = "DROP TABLE IF EXISTS Modules";
-                    command.ExecuteNonQuery();
+                        command.CommandText = "DROP TABLE IF EXISTS Modules";
+                        command.ExecuteNonQuery();
 
-                    command.CommandText = "DROP TABLE IF EXISTS Features";
-                    command.ExecuteNonQuery();
+                        command.CommandText = "DROP TABLE IF EXISTS Features";
+                        command.ExecuteNonQuery();
+                    }
                 }
             }
         }

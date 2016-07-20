@@ -74,14 +74,6 @@ namespace Wheatech.Modulize
             return _configuration;
         }
 
-        internal void Reset()
-        {
-            _modules = null;
-            _features = null;
-            _environment = null;
-            _configuration.SetReadOnly(false);
-        }
-
         /// <summary>
         /// Gets all the discovered modules.
         /// </summary>
@@ -360,14 +352,6 @@ namespace Wheatech.Modulize
             System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
         }
 
-        private void RemoveEventHandlers()
-        {
-            AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
-            System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
-            typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
-              .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
-        }
-
         private void OnDomainUnload(object sender, EventArgs e)
         {
             Dispose();
@@ -630,7 +614,6 @@ namespace Wheatech.Modulize
         {
             if (_disposed) return;
             Dispose(true);
-            RemoveEventHandlers();
             GC.SuppressFinalize(this);
             _disposed = true;
         }
@@ -647,14 +630,25 @@ namespace Wheatech.Modulize
         {
             if (disposing)
             {
+                AppDomain.CurrentDomain.DomainUnload -= OnDomainUnload;
+                System.Web.Hosting.HostingEnvironment.StopListening -= OnStopListening;
+                typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
+                  .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
                 AppDomain.CurrentDomain.AssemblyResolve -= OnResolveDepedencyAssembly;
-                ShutdownModules(from module in _modules
-                                where module.InstallState != ModuleInstallState.RequireInstall && module.Errors == ModuleErrors.None
-                                select module);
-                _configuration.Dispose(disposing);
-                _configuration = null;
-                _modules = null;
-                _features = null;
+
+                if (_modules!=null)
+                {
+                    ShutdownModules(from module in _modules
+                                    where module.InstallState != ModuleInstallState.RequireInstall && module.Errors == ModuleErrors.None
+                                    select module);
+                    _modules = null;
+                    _features = null;
+                }
+                if (_configuration!=null)
+                {
+                    _configuration.Dispose(disposing);
+                    _configuration = null;
+                }
                 _environment = null;
             }
         }

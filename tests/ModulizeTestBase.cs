@@ -9,7 +9,7 @@ using Wheatech.Activation;
 
 namespace Wheatech.Modulize.UnitTests
 {
-    public abstract class ModulizeTestBase
+    public abstract class ModulizeTestBase : IDisposable
     {
         protected const string FolderPath = "~/modules/";
 
@@ -28,7 +28,6 @@ namespace Wheatech.Modulize.UnitTests
             {
                 Directory.CreateDirectory(PathUtils.ResolvePath(FolderPath));
             }
-            Modulizer.Reset();
             Modulizer.Configure().UseLocator(new StaticModuleLocator("Library", FolderPath, DiscoverStrategy.Enumerate, false)).PersistWith<MockPersistProvider>();
         }
 
@@ -135,6 +134,20 @@ namespace Wheatech.Modulize.UnitTests
             sb.AppendLine("}");
 
             return sb.ToString();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Modulizer.Reset();
+            }
         }
     }
 }

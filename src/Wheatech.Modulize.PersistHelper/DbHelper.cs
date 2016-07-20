@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Text;
 
 namespace Wheatech.Modulize.PersistHelper
 {
@@ -70,6 +71,31 @@ namespace Wheatech.Modulize.PersistHelper
                 }
             }
             return null;
+        }
+
+        public static string ReplaceConnectionStringValue(string connectionString, Func<string, string, string> replace)
+        {
+            var replacedConnectionString = new StringBuilder();
+            foreach (var section in connectionString.Split(';'))
+            {
+                var index = section.IndexOf('=');
+                if (index != -1)
+                {
+                    var sectionName = section.Substring(0, index).Trim();
+                    var value = section.Substring(index + 1).Trim();
+                    if ((value[0] == '\'' && value[value.Length - 1] == '\'') || (value[0] == '"' && value[value.Length - 1] == '"'))
+                    {
+                        value = value.Substring(1, value.Length - 2);
+                    }
+                    value = replace(sectionName, value);
+                    replacedConnectionString.Append(sectionName).Append('=').Append(value).Append(';');
+                }
+                else if(!string.IsNullOrEmpty(section))
+                {
+                    replacedConnectionString.Append(section).Append(';');
+                }
+            }
+            return replacedConnectionString.ToString();
         }
     }
 }

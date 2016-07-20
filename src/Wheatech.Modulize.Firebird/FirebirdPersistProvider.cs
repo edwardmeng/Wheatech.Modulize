@@ -8,7 +8,7 @@ namespace Wheatech.Modulize.Firebird
     /// <summary>
     /// The FirebirdPersistProvider implements the methods to use Firebird as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class FirebirdPersistProvider : IPersistProvider
+    public class FirebirdPersistProvider : IPersistProvider, IDisposable
     {
         private readonly string _nameOrConnectionString;
         private bool _initialized;
@@ -33,9 +33,9 @@ namespace Wheatech.Modulize.Firebird
             string connectionString;
             if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
             {
-                connectionString = $"DataSource=localhost;Database={PathUtils.ResolvePath(_nameOrConnectionString)};ServerType=0;";
+                connectionString = $"database={PathUtils.ResolvePath(_nameOrConnectionString)};ServerType=1;";
             }
-            EnsureDatabaseFile(connectionString);
+            EnsureDatabaseFile(ref connectionString);
             _connection = new FbConnection(connectionString);
             _connection.Open();
             using (var command = new FbCommand())
@@ -44,14 +44,14 @@ namespace Wheatech.Modulize.Firebird
                 command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
                                       "IF (NOT EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'MODULES'))" + Environment.NewLine +
                                       "THEN" + Environment.NewLine +
-                                      "EXECUTE STATEMENT 'CREATE TABLE MODULES(ID VARCHAR(256), VERSION VARCHAR(256))';" + Environment.NewLine +
+                                      "EXECUTE STATEMENT 'CREATE TABLE MODULES(ID VARCHAR(256) PRIMARY KEY, VERSION VARCHAR(256))';" + Environment.NewLine +
                                       "END";
                 command.ExecuteNonQuery();
 
                 command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
                                       "IF (NOT EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'FEATURES'))" + Environment.NewLine +
                                       "THEN" + Environment.NewLine +
-                                      "EXECUTE STATEMENT 'CREATE TABLE FEATURES(ID VARCHAR(256))';" + Environment.NewLine +
+                                      "EXECUTE STATEMENT 'CREATE TABLE FEATURES(ID VARCHAR(256) PRIMARY KEY)';" + Environment.NewLine +
                                       "END";
                 command.ExecuteNonQuery();
             }
@@ -66,22 +66,29 @@ namespace Wheatech.Modulize.Firebird
             }
         }
 
-        private void EnsureDatabaseFile(string connectionString)
+        private void EnsureDatabaseFile(ref string connectionString)
         {
-            string dataSource = DbHelper.ExtractConnectionStringValue(connectionString, "database") ?? DbHelper.ExtractConnectionStringValue(connectionString, "initial catalog");
-            if (!string.IsNullOrEmpty(dataSource) && dataSource.IndexOf('.') > 0)
+            connectionString = DbHelper.ReplaceConnectionStringValue(connectionString, (name, value) =>
             {
-                //var filePath = PathUtils.ResolvePath(dataSource);
-                //if (!File.Exists(filePath))
-                //{
-                //    var dirPath = Path.GetDirectoryName(filePath);
-                //    if (!string.IsNullOrEmpty(dirPath) && !Directory.Exists(dirPath))
-                //    {
-                //        Directory.CreateDirectory(dirPath);
-                //    }
-                //    FbConnection.CreateDatabase(connectionString, false);
-                //}
-                FbConnection.CreateDatabase(connectionString, false);
+                if (string.Equals(name, "database",StringComparison.OrdinalIgnoreCase)||string.Equals(name, "initial catalog", StringComparison.OrdinalIgnoreCase))
+                {
+                    return PathUtils.ResolvePath(value);
+                }
+                return value;
+            });
+            string dataSource = DbHelper.ExtractConnectionStringValue(connectionString, "database") ?? DbHelper.ExtractConnectionStringValue(connectionString, "initial catalog");
+            if (!string.IsNullOrEmpty(dataSource))
+            {
+                var filePath = PathUtils.ResolvePath(dataSource);
+                if (!File.Exists(filePath))
+                {
+                    var dirPath = Path.GetDirectoryName(filePath);
+                    if (!string.IsNullOrEmpty(dirPath) && !Directory.Exists(dirPath))
+                    {
+                        Directory.CreateDirectory(dirPath);
+                    }
+                    FbConnection.CreateDatabase(connectionString, true);
+                }
             }
         }
 
@@ -189,6 +196,18 @@ namespace Wheatech.Modulize.Firebird
                 }
                 version = new Version(Convert.ToString(result));
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_connection != null)
+            {
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }

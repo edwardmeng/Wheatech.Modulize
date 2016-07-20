@@ -1,25 +1,28 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Data.SqlClient;
 
 namespace Wheatech.Modulize.UnitTests
 {
-    public abstract class SqlServerPersistProviderTestBase : PersistProviderTestBase, IDisposable
+    public abstract class SqlServerPersistProviderTestBase : PersistProviderTestBase
     {
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["SqlServer"].ConnectionString))
+            base.Dispose(disposing);
+            if (disposing)
             {
-                connection.Open();
-                using (var command = new SqlCommand())
+                using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["SqlServer"].ConnectionString))
                 {
-                    command.Connection = connection;
+                    connection.Open();
+                    using (var command = new SqlCommand())
+                    {
+                        command.Connection = connection;
 
-                    command.CommandText = "IF OBJECT_ID(N'Modules',N'U') IS NOT NULL DROP TABLE Modules";
-                    command.ExecuteNonQuery();
+                        command.CommandText = "IF OBJECT_ID(N'Modules',N'U') IS NOT NULL DROP TABLE Modules";
+                        command.ExecuteNonQuery();
 
-                    command.CommandText = "IF OBJECT_ID(N'Features',N'U') IS NOT NULL DROP TABLE Features";
-                    command.ExecuteNonQuery();
+                        command.CommandText = "IF OBJECT_ID(N'Features',N'U') IS NOT NULL DROP TABLE Features";
+                        command.ExecuteNonQuery();
+                    }
                 }
             }
         }

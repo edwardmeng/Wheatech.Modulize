@@ -9,7 +9,7 @@ namespace Wheatech.Modulize.SqlServer
     /// <summary>
     /// The MySQLPersistProvider implements the methods to use Microsoft SQL Server as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class SqlServerPersistProvider : IPersistProvider
+    public class SqlServerPersistProvider : IPersistProvider, IDisposable
     {
         private readonly string _nameOrConnectionString;
         private bool _initialized;
@@ -168,6 +168,18 @@ namespace Wheatech.Modulize.SqlServer
                 }
                 version = new Version(Convert.ToString(result));
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_connection != null)
+            {
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }
