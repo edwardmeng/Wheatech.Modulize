@@ -1,0 +1,6 @@
+﻿Name: Caching
+Author: Edward Meng
+Version: 1.10.1
+Category: Performance
+Description: Provides an API to cache business data.
+License: MIT

@@ -72,9 +72,9 @@ namespace Wheatech.Modulize
             }
         }
 
-        internal bool HasInstallers => _installMethods != null && _installMethods.Length > 0;
+        public bool HasInstallers => _installMethods != null && _installMethods.Length > 0;
 
-        internal bool HasUninstallers => _uninstallMethods != null && _uninstallMethods.Length > 0;
+        public bool HasUninstallers => _uninstallMethods != null && _uninstallMethods.Length > 0;
 
         public ModuleInstallState InstallState
         {
