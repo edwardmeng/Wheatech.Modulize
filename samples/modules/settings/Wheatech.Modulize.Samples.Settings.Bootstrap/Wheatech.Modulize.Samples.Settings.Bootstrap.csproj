@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{81DBD359-BFAD-4625-A276-F9B8AB5CC807}</ProjectGuid>
+    <ProjectGuid>{56AAD1A9-B3E1-4820-83F1-C8E1251A924F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Modulize.Samples.Caching</RootNamespace>
-    <AssemblyName>Wheatech.Modulize.Samples.Caching</AssemblyName>
+    <RootNamespace>Wheatech.Modulize.Samples.Settings.Bootstrap</RootNamespace>
+    <AssemblyName>Wheatech.Modulize.Samples.Settings.Bootstrap</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,43 +33,38 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Wheatech.Activation, Version=1.0.4.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Wheatech.Activation.1.0.4\lib\net461\Wheatech.Activation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CachingExtensions.cs" />
-    <Compile Include="DefaultCacheService.cs" />
-    <Compile Include="ICacheService.cs" />
+    <Compile Include="SettingsInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\tools\wheatech.snk">
+    <ProjectReference Include="..\..\..\..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
+      <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
+      <Name>Wheatech.Modulize</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\platform\Wheatech.Modulize.Samples.Platform.Services\Wheatech.Modulize.Samples.Platform.Services.csproj">
+      <Project>{a07e68b9-6f17-45a4-81a8-5a77c368d1ae}</Project>
+      <Name>Wheatech.Modulize.Samples.Platform.Services</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\tools\wheatech.snk">
       <Link>Properties\wheatech.snk</Link>
     </None>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="manifest.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)manifest.txt $(TargetDir)manifest.txt /Y</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

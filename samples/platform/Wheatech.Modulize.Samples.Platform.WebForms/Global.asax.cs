@@ -5,7 +5,6 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
 {
     public class Global : System.Web.HttpApplication
     {
-
         protected void Application_Start(object sender, EventArgs e)
         {
             ApplicationActivator.UseApplicationVersion(new System.Version("1.0.0")).UseStartupSteps("Configuration", "ConfigurationCompleted").Startup();

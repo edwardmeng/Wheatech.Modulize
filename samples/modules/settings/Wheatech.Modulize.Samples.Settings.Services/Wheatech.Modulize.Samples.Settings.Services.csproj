@@ -4,19 +4,21 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{81DBD359-BFAD-4625-A276-F9B8AB5CC807}</ProjectGuid>
+    <ProjectGuid>{63526608-7904-43BB-A486-B234B4B9C13F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Modulize.Samples.Caching</RootNamespace>
-    <AssemblyName>Wheatech.Modulize.Samples.Caching</AssemblyName>
+    <RootNamespace>Wheatech.Modulize.Samples.Settings.Services</RootNamespace>
+    <AssemblyName>Wheatech.Modulize.Samples.Settings.Services</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,12 +35,11 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,30 +47,34 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Wheatech.Activation, Version=1.0.4.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Wheatech.Activation.1.0.4\lib\net461\Wheatech.Activation.dll</HintPath>
+      <HintPath>..\..\..\..\packages\Wheatech.Activation.1.0.4\lib\net461\Wheatech.Activation.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CachingExtensions.cs" />
-    <Compile Include="DefaultCacheService.cs" />
-    <Compile Include="ICacheService.cs" />
+    <Compile Include="DefaultSettingsService.cs" />
+    <Compile Include="ISettingsService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\tools\wheatech.snk">
+    <None Include="..\..\..\..\tools\wheatech.snk">
       <Link>Properties\wheatech.snk</Link>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="manifest.txt" />
+    <ProjectReference Include="..\..\..\platform\Wheatech.Modulize.Samples.Platform.Services\Wheatech.Modulize.Samples.Platform.Services.csproj">
+      <Project>{a07e68b9-6f17-45a4-81a8-5a77c368d1ae}</Project>
+      <Name>Wheatech.Modulize.Samples.Platform.Services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Wheatech.Modulize.Samples.Caching\Wheatech.Modulize.Samples.Caching.csproj">
+      <Project>{81dbd359-bfad-4625-a276-f9b8ab5cc807}</Project>
+      <Name>Wheatech.Modulize.Samples.Caching</Name>
+    </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\..\..\src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy $(ProjectDir)manifest.txt $(TargetDir)manifest.txt /Y</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

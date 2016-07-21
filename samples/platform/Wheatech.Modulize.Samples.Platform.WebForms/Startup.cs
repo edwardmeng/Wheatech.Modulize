@@ -7,7 +7,7 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
     {
         public void ConfigurationCompleted(IActivatingEnvironment environment, IModuleConfiguration configuration, IModuleContainer container)
         {
-            configuration.PersistWithSQLite("~/App_Data/modulize.db");
+            configuration.PersistWithSQLite("SQLite");
             container.Start(environment);
         }
     }

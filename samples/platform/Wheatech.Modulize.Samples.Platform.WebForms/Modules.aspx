@@ -1,17 +1,8 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Modules.aspx.cs" Inherits="Wheatech.Modulize.Samples.Platform.WebForms.Modules" %>
+﻿<%@ Page Language="C#" Title="Modules & Features" AutoEventWireup="true" CodeBehind="Modules.aspx.cs" MasterPageFile="~/Site.Master" Inherits="Wheatech.Modulize.Samples.Platform.WebForms.Modules" %>
 
 <%@ Import Namespace="Wheatech.Modulize" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="<%= ResolveUrl("~/Content/bootstrap.min.css") %>" />
-    <link rel="stylesheet" type="text/css" href="<%= ResolveUrl("~/Content/bootstrap-theme.min.css") %>" />
-    <title>Modules & Features</title>
+<asp:Content  ContentPlaceHolderID="header" runat="server">
     <style>
         .media-list {
             border: 1px solid #eaeaea;
@@ -63,9 +54,8 @@
             display: inline-block;
         }
     </style>
-</head>
-<body>
-    <form id="form1" runat="server">
+</asp:Content>
+<asp:Content runat="server" ContentPlaceHolderID="main">
         <ul class="nav nav-tabs" role="tablist" id="tabs-prices">
             <li role="presentation" class="active">
                 <a href="#tabpane-modules" aria-controls="tabpane-modules" role="tab" data-toggle="tab" class="active">Modules</a>
@@ -165,8 +155,4 @@
                 </ul>
             </div>
         </div>
-    </form>
-    <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/jquery-2.2.4.min.js") %>"></script>
-    <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/bootstrap.min.js") %>"></script>
-</body>
-</html>
+</asp:Content>
