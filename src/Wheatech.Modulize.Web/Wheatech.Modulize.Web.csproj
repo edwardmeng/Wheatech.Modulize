@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9C6483B6-A55A-443C-AE1C-8A49264A90FF}</ProjectGuid>
+    <ProjectGuid>{A1861BDD-0FA1-407B-987F-CB1E97E47A5E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Modulize.Samples.Settings.WebForms</RootNamespace>
-    <AssemblyName>Wheatech.Modulize.Samples.Settings.WebForms</AssemblyName>
+    <RootNamespace>Wheatech.Modulize.Web</RootNamespace>
+    <AssemblyName>Wheatech.Modulize.Web</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -29,18 +29,50 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+    <Reference Include="Wheatech, Version=1.0.1.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Wheatech.1.0.1\lib\net461\Wheatech.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ModulePageHandlerFactory.cs" />
+    <Compile Include="ModulePageRouteHandler.cs" />
+    <Compile Include="ModulePageRoute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RouteCollectionExtensions.cs" />
+    <Compile Include="Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wheatech.Modulize\Wheatech.Modulize.csproj">
+      <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
+      <Name>Wheatech.Modulize</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\tools\wheatech.snk">
+      <Link>Properties\wheatech.snk</Link>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -184,7 +184,7 @@ namespace Wheatech.Modulize
             {
                 IAssemblyLoader matchEntryAssembly = null;
                 var assemblyIdentity = EntryAssembly;
-                foreach (var assembly in Module.Assemblies)
+                foreach (var assembly in Module.AssemblyLoaders)
                 {
                     switch (assembly.Match(ref assemblyIdentity))
                     {

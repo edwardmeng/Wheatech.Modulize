@@ -70,6 +70,9 @@
     <Compile Include="Activation\ModulizeTransation.cs" />
     <Compile Include="Activation\TypeNameHelper.cs" />
     <Compile Include="Discover\ModuleDiscoverException.cs" />
+    <Compile Include="Extension\FeatureEventArgs.cs" />
+    <Compile Include="Extension\IModuleContainerExtension.cs" />
+    <Compile Include="Extension\ModuleEventArgs.cs" />
     <Compile Include="FeatureDescriptorExtensions.cs" />
     <Compile Include="IModuleConfiguration.cs" />
     <Compile Include="IModuleContainer.cs" />

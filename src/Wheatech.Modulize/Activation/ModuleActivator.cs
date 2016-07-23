@@ -72,6 +72,10 @@ namespace Wheatech.Modulize
             }
         }
 
+        internal IAssemblyLoader[] AssemblyLoaders { get; set; }
+
+        public IEnumerable<Assembly> Assemblies => _loadedAssemblies;
+
         public bool HasInstallers => _installMethods != null && _installMethods.Length > 0;
 
         public bool HasUninstallers => _uninstallMethods != null && _uninstallMethods.Length > 0;
@@ -105,7 +109,6 @@ namespace Wheatech.Modulize
                     }
                 }
                 additionAction?.Invoke();
-                ApplicationActivator.Startup(GetLoadedAssemblies());
             }, () =>
             {
                 Uninstall(environment);
@@ -132,7 +135,6 @@ namespace Wheatech.Modulize
             RefreshErrors(environment);
             transation?.Enlist(() =>
             {
-                ApplicationActivator.Shutdown(GetLoadedAssemblies());
                 if (_uninstallMethods != null)
                 {
                     foreach (var method in _uninstallMethods)
@@ -161,7 +163,7 @@ namespace Wheatech.Modulize
         internal bool TryLoadAssembly(IActivatingEnvironment environment, AssemblyIdentity assemblyIdentity, out Assembly assembly)
         {
             assembly = null;
-            foreach (var assemblyLoader in Assemblies)
+            foreach (var assemblyLoader in AssemblyLoaders)
             {
                 switch (assemblyLoader.Match(ref assemblyIdentity))
                 {
@@ -180,7 +182,7 @@ namespace Wheatech.Modulize
 
         internal void LoadAssemblies(IActivatingEnvironment environment)
         {
-            foreach (var assemblyLoader in Assemblies)
+            foreach (var assemblyLoader in AssemblyLoaders)
             {
                 var assembly = LoadAssembly(environment, assemblyLoader);
                 if (!_loadedAssemblies.Contains(assembly))
@@ -240,7 +242,7 @@ namespace Wheatech.Modulize
             {
                 var assemblyIdentity = EntryAssembly;
                 IAssemblyLoader matchEntryAssembly = null;
-                foreach (var assembly in Assemblies)
+                foreach (var assembly in AssemblyLoaders)
                 {
                     switch (assembly.Match(ref assemblyIdentity))
                     {

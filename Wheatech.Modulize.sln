@@ -41,6 +41,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Samples.P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Samples.Platform.Common", "samples\platform\Wheatech.Modulize.Samples.Platform.Common\Wheatech.Modulize.Samples.Platform.Common.csproj", "{691346DD-015F-4177-852E-AF3237F818D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Web", "src\Wheatech.Modulize.Web\Wheatech.Modulize.Web.csproj", "{A1861BDD-0FA1-407B-987F-CB1E97E47A5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Samples.Settings.WebForms", "samples\platform\Wheatech.Modulize.Samples.Platform.WebForms\Modules\Settings\Wheatech.Modulize.Samples.Settings.WebForms.csproj", "{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{28df6970-3312-4dc2-8ffb-1ef21b32dcc2}*SharedItemsImports = 13
@@ -110,6 +114,14 @@ Global
 		{691346DD-015F-4177-852E-AF3237F818D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{691346DD-015F-4177-852E-AF3237F818D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{691346DD-015F-4177-852E-AF3237F818D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1861BDD-0FA1-407B-987F-CB1E97E47A5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1861BDD-0FA1-407B-987F-CB1E97E47A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1861BDD-0FA1-407B-987F-CB1E97E47A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1861BDD-0FA1-407B-987F-CB1E97E47A5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,5 +143,7 @@ Global
 		{56AAD1A9-B3E1-4820-83F1-C8E1251A924F} = {FF137302-1510-47DD-91E7-D728FDA93DF3}
 		{A07E68B9-6F17-45A4-81A8-5A77C368D1AE} = {5F0B121E-DCCE-46D7-B984-41EDE6AD8314}
 		{691346DD-015F-4177-852E-AF3237F818D9} = {5F0B121E-DCCE-46D7-B984-41EDE6AD8314}
+		{A1861BDD-0FA1-407B-987F-CB1E97E47A5E} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
+		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7} = {FF137302-1510-47DD-91E7-D728FDA93DF3}
 	EndGlobalSection
 EndGlobal

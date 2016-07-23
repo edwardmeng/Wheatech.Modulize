@@ -613,15 +613,14 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
             if (errors.HasFlag(FeatureErrors.MissingDependency))
             {
                 var missingDependencies = from dependency in feature.Dependencies
-                                          let dependencyFeature = Modulizer.GetFeatures().SingleOrDefault(x => x.FeatureId == dependency.FeatureId)
-                                          where Modulizer.GetFeatures().All(x => x.FeatureId != dependency.FeatureId)
+                                          where Modulizer.GetFeature(dependency.FeatureId) == null
                                           select dependency.FeatureId;
                 return $"The dependency features are missing: {string.Join(", ", missingDependencies)}";
             }
             if (errors.HasFlag(FeatureErrors.ForbiddenDependency))
             {
                 var forbiddenDependencies = from dependency in feature.Dependencies
-                                            let dependencyFeature = Modulizer.GetFeatures().SingleOrDefault(x => x.FeatureId == dependency.FeatureId)
+                                            let dependencyFeature = Modulizer.GetFeature(dependency.FeatureId)
                                             where dependencyFeature != null && dependencyFeature.Errors != FeatureErrors.None
                                             select dependencyFeature?.FeatureName;
                 return $"The dependency features have been forbidden: {string.Join(", ", forbiddenDependencies)}";
@@ -629,7 +628,7 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
             if (errors.HasFlag(FeatureErrors.IncompatibleDependency))
             {
                 var incompatibleDependencies = from dependency in feature.Dependencies
-                                               let dependencyFeature = Modulizer.GetFeatures().SingleOrDefault(x => x.FeatureId == dependency.FeatureId)
+                                               let dependencyFeature = Modulizer.GetFeature(dependency.FeatureId)
                                                where dependencyFeature != null && dependencyFeature.Errors == FeatureErrors.None && dependency.Version != null && !dependency.Version.Match(dependencyFeature.Module.ModuleVersion)
                                                select dependencyFeature?.FeatureName;
                 return $"The dependency features are incompatible: {string.Join(", ", incompatibleDependencies)}";
@@ -637,7 +636,7 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
             if (errors.HasFlag(FeatureErrors.DisabledDependency))
             {
                 var disabledDependencies = from dependency in feature.Dependencies
-                                           let dependencyFeature = Modulizer.GetFeatures().SingleOrDefault(x => x.FeatureId == dependency.FeatureId)
+                                           let dependencyFeature = Modulizer.GetFeature(dependency.FeatureId)
                                            where dependencyFeature != null && dependencyFeature.EnableState == FeatureEnableState.RequireEnable && dependencyFeature.Errors == FeatureErrors.None
                                            select dependencyFeature?.FeatureName;
                 return $"The dependency features have not been enabled: {string.Join(", ", disabledDependencies)}";

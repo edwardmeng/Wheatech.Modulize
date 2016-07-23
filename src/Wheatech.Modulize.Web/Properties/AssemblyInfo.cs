@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Wheatech.Modulize.Samples.Settings.WebForms")]
+[assembly: AssemblyTitle("Wheatech.Modulize.Web")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Wheatech.Modulize.Samples.Settings.WebForms")]
+[assembly: AssemblyProduct("Wheatech.Modulize.Web")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("9c6483b6-a55a-443c-ae1c-8a49264a90ff")]
+[assembly: Guid("a1861bdd-0fa1-407b-987f-cb1e97e47a5e")]
 
 // 程序集的版本信息由下列四个值组成: 
 //

@@ -1,3 +1,4 @@
 ﻿[
-    "~/../../modules/Wheatech.Modulize.Samples.Caching"
+    "~/../../modules/Wheatech.Modulize.Samples.Caching",
+    "~/modules/settings"
 ]

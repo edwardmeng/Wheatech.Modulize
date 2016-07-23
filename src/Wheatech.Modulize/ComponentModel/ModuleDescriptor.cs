@@ -68,7 +68,5 @@ namespace Wheatech.Modulize
         /// Get all the features belong to the module.
         /// </summary>
         public FeatureDescriptorCollection Features { get; internal set; }
-
-        public IAssemblyLoader[] Assemblies { get; internal set; }
     }
 }

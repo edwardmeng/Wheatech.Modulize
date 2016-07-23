@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
-  <Import Project="..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="..\..\..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\..\..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,12 +9,12 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{956D5634-0E8D-452A-A097-E0506D69364C}</ProjectGuid>
+    <ProjectGuid>{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Wheatech.Modulize.Samples.Platform.WebForms</RootNamespace>
-    <AssemblyName>Wheatech.Modulize.Samples.Platform.WebForms</AssemblyName>
+    <RootNamespace>Wheatech.Modulize.Samples.Settings.WebForms</RootNamespace>
+    <AssemblyName>Wheatech.Modulize.Samples.Settings.WebForms</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
@@ -44,7 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <HintPath>..\..\..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -64,26 +64,14 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="Wheatech, Version=1.0.1.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Wheatech.1.0.1\lib\net461\Wheatech.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Wheatech.Activation, Version=1.0.4.0, Culture=neutral, PublicKeyToken=dfa3bda2996d7b44, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Wheatech.Activation.1.0.4\lib\net461\Wheatech.Activation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Global.asax" />
+    <Content Include="manifest.txt" />
     <Content Include="packages.config" />
-    <Content Include="..\..\..\tools\wheatech.snk">
+    <Content Include="..\..\..\..\..\tools\wheatech.snk">
       <Link>Properties\wheatech.snk</Link>
     </Content>
-    <Content Include="modules.json" />
-    <None Include="Scripts\jquery-2.2.4.intellisense.js" />
-    <Content Include="Scripts\jquery-2.2.4.js" />
-    <Content Include="Scripts\jquery-2.2.4.min.js" />
-    <Content Include="Scripts\jquery-2.2.4.min.map" />
+    <Content Include="Settings.aspx" />
     <Content Include="Site.Master" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -93,36 +81,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\bootstrap-theme.css" />
-    <Content Include="Content\bootstrap-theme.min.css" />
-    <Content Include="Content\bootstrap.css" />
-    <Content Include="Content\bootstrap.min.css" />
-    <Content Include="fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Modules.aspx" />
-    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
-    <Content Include="fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="Content\bootstrap.min.css.map" />
-    <Content Include="Content\bootstrap.css.map" />
-    <Content Include="Content\bootstrap-theme.min.css.map" />
-    <Content Include="Content\bootstrap-theme.css.map" />
-    <Content Include="Scripts\bootstrap.js" />
-    <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
-    <Compile Include="Modules.aspx.cs">
-      <DependentUpon>Modules.aspx</DependentUpon>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.aspx.cs">
+      <DependentUpon>Settings.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Modules.aspx.designer.cs">
-      <DependentUpon>Modules.aspx</DependentUpon>
+    <Compile Include="Settings.aspx.designer.cs">
+      <DependentUpon>Settings.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -133,17 +102,25 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Wheatech.Modulize.SQLite\Wheatech.Modulize.SQLite.csproj">
-      <Project>{c46d1927-61dc-4231-a8b3-11612349dd52}</Project>
-      <Name>Wheatech.Modulize.SQLite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Wheatech.Modulize.Web\Wheatech.Modulize.Web.csproj">
+    <ProjectReference Include="..\..\..\..\..\src\Wheatech.Modulize.Web\Wheatech.Modulize.Web.csproj">
       <Project>{a1861bdd-0fa1-407b-987f-cb1e97e47a5e}</Project>
       <Name>Wheatech.Modulize.Web</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
+    <ProjectReference Include="..\..\..\..\..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
       <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
       <Name>Wheatech.Modulize</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\modules\settings\Wheatech.Modulize.Samples.Settings.Bootstrap\Wheatech.Modulize.Samples.Settings.Bootstrap.csproj">
+      <Project>{56aad1a9-b3e1-4820-83f1-c8e1251a924f}</Project>
+      <Name>Wheatech.Modulize.Samples.Settings.Bootstrap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\modules\settings\Wheatech.Modulize.Samples.Settings.Services\Wheatech.Modulize.Samples.Settings.Services.csproj">
+      <Project>{63526608-7904-43bb-a486-b234b4b9c13f}</Project>
+      <Name>Wheatech.Modulize.Samples.Settings.Services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Wheatech.Modulize.Samples.Platform.Common\Wheatech.Modulize.Samples.Platform.Common.csproj">
+      <Project>{691346dd-015f-4177-852e-af3237f818d9}</Project>
+      <Name>Wheatech.Modulize.Samples.Platform.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
@@ -154,7 +131,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\..\..\..\tools\wheatech.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -165,9 +142,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>11490</DevelopmentServerPort>
+          <DevelopmentServerPort>28964</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:11490/</IISUrl>
+          <IISUrl>http://localhost:28964/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -181,8 +158,8 @@
     <PropertyGroup>
       <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props'))" />
-    <Error Condition="!Exists('..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\..\..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\..\..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

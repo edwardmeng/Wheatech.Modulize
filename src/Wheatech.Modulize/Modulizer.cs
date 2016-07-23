@@ -25,14 +25,34 @@ namespace Wheatech.Modulize
             return DefaultContainer.Configure();
         }
 
-        public static ModuleDescriptor[] GetModules()
+        public static ModuleDescriptor[] GetModules(string moduleType = null)
         {
-            return DefaultContainer.GetModules();
+            return DefaultContainer.GetModules(moduleType);
+        }
+
+        /// <summary>
+        /// Gets the module with specified module ID.
+        /// </summary>
+        /// <param name="moduleId">The specified module ID to lookup module.</param>
+        /// <returns>The <see cref="ModuleDescriptor"/> if the module exists; otherwise, null.</returns>
+        public static ModuleDescriptor GetModule(string moduleId)
+        {
+            return DefaultContainer.GetModule(moduleId);
         }
 
         public static FeatureDescriptor[] GetFeatures()
         {
             return DefaultContainer.GetFeatures();
+        }
+
+        /// <summary>
+        /// Gets the feature with specified feature ID.
+        /// </summary>
+        /// <param name="featureId">The specified feature ID to lookup feature.</param>
+        /// <returns>The <see cref="FeatureDescriptor"/> if the feature exists; otherwise, null.</returns>
+        public static FeatureDescriptor GetFeature(string featureId)
+        {
+            return DefaultContainer.GetFeature(featureId);
         }
 
         public static void InstallModules(IEnumerable<string> modules)

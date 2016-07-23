@@ -60,7 +60,7 @@ namespace Wheatech.Modulize
                     }
                     module.ModuleType = context.Location.ModuleType;
                     module.ModulePath = fileInfo.FullName;
-                    module.Assemblies = new IAssemblyLoader[] { FileAssemblyLoader.Create(module.ShadowPath) };
+                    module.AssemblyLoaders = new IAssemblyLoader[] { FileAssemblyLoader.Create(module.ShadowPath) };
                     return module;
                 }
             }

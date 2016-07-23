@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -14,12 +15,22 @@ namespace Wheatech.Modulize
     public class ModuleContainer : IModuleContainer, IDisposable
     {
         #region Fields
-
+        private static readonly object EventModuleLoaded = new object();
+        private static readonly object EventModuleUnloaded = new object();
+        private static readonly object EventModuleInstalled = new object();
+        private static readonly object EventModuleUninstalled = new object();
+        private static readonly object EventFeatureEnabled = new object();
+        private static readonly object EventFeatureDisabled = new object();
+        private EventHandlerList _events;
         private ModuleConfiguration _configuration;
         private ModuleDescriptor[] _modules;
+        private IDictionary<string, ModuleDescriptor> _keyedModules;
         private FeatureDescriptor[] _features;
+        private IDictionary<string, FeatureDescriptor> _keyedFeatures;
         private IActivatingEnvironment _environment;
+        private Assembly[] _applicationAssemblies;
         private bool _disposed;
+        private List<IModuleContainerExtension> _extensions = new List<IModuleContainerExtension>();
 
         #endregion
 
@@ -79,11 +90,28 @@ namespace Wheatech.Modulize
         /// </summary>
         /// <returns>All the discovered modules.</returns>
         /// <exception cref="InvalidOperationException">The container has not been started.</exception>
-        public ModuleDescriptor[] GetModules()
+        public ModuleDescriptor[] GetModules(string moduleType = null)
         {
             ValidateDisposed();
             ValidateStarted();
-            return _modules;
+            return string.IsNullOrEmpty(moduleType) ? _modules : _modules.Where(module => string.Equals(module.ModuleType, moduleType, StringComparison.OrdinalIgnoreCase)).ToArray();
+        }
+
+        /// <summary>
+        /// Gets the module with specified module ID.
+        /// </summary>
+        /// <param name="moduleId">The specified module ID to lookup module.</param>
+        /// <returns>The <see cref="ModuleDescriptor"/> if the module exists; otherwise, null.</returns>
+        public ModuleDescriptor GetModule(string moduleId)
+        {
+            ValidateDisposed();
+            ValidateStarted();
+            if (string.IsNullOrEmpty(moduleId))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(moduleId));
+            }
+            ModuleDescriptor module;
+            return _keyedModules.TryGetValue(moduleId, out module) ? module : null;
         }
 
         /// <summary>
@@ -96,6 +124,23 @@ namespace Wheatech.Modulize
             ValidateDisposed();
             ValidateStarted();
             return _features;
+        }
+
+        /// <summary>
+        /// Gets the feature with specified feature ID.
+        /// </summary>
+        /// <param name="featureId">The specified feature ID to lookup feature.</param>
+        /// <returns>The <see cref="FeatureDescriptor"/> if the feature exists; otherwise, null.</returns>
+        public FeatureDescriptor GetFeature(string featureId)
+        {
+            ValidateDisposed();
+            ValidateStarted();
+            if (string.IsNullOrEmpty(featureId))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(featureId));
+            }
+            FeatureDescriptor feature;
+            return _keyedFeatures.TryGetValue(featureId, out feature) ? feature : null;
         }
 
         /// <summary>
@@ -114,6 +159,8 @@ namespace Wheatech.Modulize
             }
             var moduleIds = modules.ToArray();
             ValidateModules(moduleIds);
+            var installedModules = new List<ModuleDescriptor>();
+            var enabledFeatures = new List<FeatureDescriptor>();
             using (var transaction = new ModulizeTransation())
             {
                 foreach (var module in _modules)
@@ -144,11 +191,21 @@ namespace Wheatech.Modulize
                         }
                         if (installed)
                         {
-                            EnableFeatures(transaction, module.Features.Select(feature => feature.FeatureId).ToArray(), false);
+                            installedModules.Add(module);
+                            enabledFeatures.AddRange(EnableFeatures(transaction, module.Features.Select(feature => feature.FeatureId).ToArray(), false));
                         }
                     }
                 }
                 transaction.Complete();
+            }
+            foreach (var module in installedModules)
+            {
+                OnModuleInstalled(new ModuleEventArgs(module));
+            }
+            StartupModules(installedModules);
+            foreach (var feature in enabledFeatures)
+            {
+                OnFeatureEnabled(new FeatureEventArgs(feature));
             }
         }
 
@@ -168,6 +225,8 @@ namespace Wheatech.Modulize
             }
             var moduleIds = modules.ToArray();
             ValidateModules(moduleIds);
+            var uninstalledModules = new List<ModuleDescriptor>();
+            var disabledFeatures = new List<FeatureDescriptor>();
             using (var transaction = new ModulizeTransation())
             {
                 foreach (var module in _modules.Reverse())
@@ -188,7 +247,7 @@ namespace Wheatech.Modulize
                         {
                             if (feature.EnableState == FeatureEnableState.Enabled && module.Features.Contains(feature))
                             {
-                                DisableFeature(transaction, feature, true);
+                                DisableFeature(transaction, feature, true, disabledFeatures);
                             }
                         }
                         var moduleId = module.ModuleId;
@@ -196,9 +255,19 @@ namespace Wheatech.Modulize
                          {
                              _configuration.PersistProvider.UninstallModule(moduleId);
                          });
+                        uninstalledModules.Add(module);
                     }
                 }
                 transaction.Complete();
+            }
+            foreach (var feature in disabledFeatures)
+            {
+                OnFeatureDisabled(new FeatureEventArgs(feature));
+            }
+            ShutdownModules(uninstalledModules);
+            foreach (var module in uninstalledModules)
+            {
+                OnModuleUninstalled(new ModuleEventArgs(module));
             }
         }
 
@@ -218,10 +287,15 @@ namespace Wheatech.Modulize
             }
             var featureIds = features.ToArray();
             ValidateFeatures(featureIds);
+            var enabledFeatures = new List<FeatureDescriptor>();
             using (var transaction = new ModulizeTransation())
             {
-                EnableFeatures(transaction, featureIds, true);
+                enabledFeatures.AddRange(EnableFeatures(transaction, featureIds, true));
                 transaction.Complete();
+            }
+            foreach (var feature in enabledFeatures)
+            {
+                OnFeatureEnabled(new FeatureEventArgs(feature));
             }
         }
 
@@ -241,6 +315,7 @@ namespace Wheatech.Modulize
             }
             var featureIds = features.ToArray();
             ValidateFeatures(featureIds);
+            var disabledFeatures = new List<FeatureDescriptor>();
             using (var transaction = new ModulizeTransation())
             {
                 foreach (var feature in _features.Reverse())
@@ -255,7 +330,7 @@ namespace Wheatech.Modulize
                         }
                         foreach (var depending in feature.Dependings)
                         {
-                            DisableFeature(transaction, depending, false);
+                            DisableFeature(transaction, depending, false, disabledFeatures);
                         }
                         var featureId = feature.FeatureId;
                         feature.Disable(_environment, transaction, () =>
@@ -266,14 +341,18 @@ namespace Wheatech.Modulize
                 }
                 transaction.Complete();
             }
+            foreach (var feature in disabledFeatures)
+            {
+                OnFeatureDisabled(new FeatureEventArgs(feature));
+            }
         }
 
-        private bool DisableFeature(ModulizeTransation transation, FeatureDescriptor feature, bool force)
+        private bool DisableFeature(ModulizeTransation transation, FeatureDescriptor feature, bool force, List<FeatureDescriptor> disabledFeatures)
         {
             if (feature.EnableState != FeatureEnableState.Enabled) return true;
             if (force || !feature.CanDisable)
             {
-                if (feature.Dependings.Any(depending => !DisableFeature(transation, depending, force)))
+                if (feature.Dependings.Any(depending => !DisableFeature(transation, depending, force, disabledFeatures)))
                 {
                     return false;
                 }
@@ -284,13 +363,15 @@ namespace Wheatech.Modulize
                     callback = () => _configuration.PersistProvider.DisableFeature(featureId);
                 }
                 feature.Disable(_environment, transation, callback);
+                disabledFeatures.Add(feature);
                 return true;
             }
             return false;
         }
 
-        private void EnableFeatures(ModulizeTransation transation, string[] features, bool force)
+        private IEnumerable<FeatureDescriptor> EnableFeatures(ModulizeTransation transation, string[] features, bool force)
         {
+            var enabledFeatures = new List<FeatureDescriptor>();
             foreach (var feature in _features)
             {
                 if (force && feature.Errors != FeatureErrors.None && feature.EnableState != FeatureEnableState.Enabled && features.Contains(feature.FeatureId))
@@ -302,6 +383,7 @@ namespace Wheatech.Modulize
                     if (!feature.CanEnable)
                     {
                         feature.Enable(_environment, transation);
+                        enabledFeatures.Add(feature);
                     }
                     else if (feature.CanEnable && features.Contains(feature.FeatureId))
                     {
@@ -310,9 +392,11 @@ namespace Wheatech.Modulize
                         {
                             _configuration.PersistProvider.EnableFeature(featureId);
                         });
+                        enabledFeatures.Add(feature);
                     }
                 }
             }
+            return enabledFeatures;
         }
 
         /// <summary>
@@ -337,6 +421,7 @@ namespace Wheatech.Modulize
             _configuration.SetReadOnly(true);
             var locations = _configuration.Locators.SelectMany(locator => locator.GetLocations()).ToArray();
             var discovers = _configuration.Discovers.ToArray();
+            _applicationAssemblies = environment.GetAssemblies().ToArray();
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveDepedencyAssembly;
             Initialize((from location in locations
                         from discover in discovers
@@ -350,6 +435,42 @@ namespace Wheatech.Modulize
             typeof(HttpRuntime).GetEvent("AppDomainShutdown", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?
                 .AddMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
             System.Web.Hosting.HostingEnvironment.StopListening += OnStopListening;
+        }
+
+        /// <summary>
+        /// Add an extension object to the container.
+        /// </summary>
+        /// <param name="extension"><see cref="IModuleContainerExtension"/> to add.</param>
+        /// <returns>The <see cref="IModuleContainer"/> object that this method was called on.</returns>
+        public IModuleContainer AddExtension(IModuleContainerExtension extension)
+        {
+            ValidateDisposed();
+            if (extension == null)
+            {
+                throw new ArgumentNullException(nameof(extension));
+            }
+            _extensions.Add(extension);
+            extension.Initialize(this);
+            return this;
+        }
+
+        /// <summary>
+        /// Get access to a configuration interface exposed by an extension.
+        /// </summary>
+        /// <remarks>Extensions can expose configuration interfaces as well as adding
+        /// strategies and policies to the container. This method walks the list of
+        /// added extensions and returns the first one that implements the requested type.
+        /// </remarks>
+        /// <param name="extensionType"><see cref="Type"/> of configuration interface required.</param>
+        /// <returns>The requested extension's configuration interface, or null if not found.</returns>
+        public IModuleContainerExtension GetExtension(Type extensionType)
+        {
+            ValidateDisposed();
+            if (extensionType == null)
+            {
+                throw new ArgumentNullException(nameof(extensionType));
+            }
+            return _extensions.FirstOrDefault(ex => extensionType.GetTypeInfo().IsAssignableFrom(ex.GetType().GetTypeInfo()));
         }
 
         private void OnDomainUnload(object sender, EventArgs e)
@@ -457,7 +578,8 @@ namespace Wheatech.Modulize
 
             _features = SortFeatures(modules);
             _modules = _features.Select(feature => feature.Module).Distinct().ToArray();
-
+            _keyedFeatures = _features.ToDictionary(feature => feature.FeatureId);
+            _keyedModules = _modules.ToDictionary(module => module.ModuleId);
             // Load the assemblies in module configuration files or bin folder.
             // At this time the reference assemblies will not be requested by the framework.
             foreach (var module in _modules)
@@ -517,27 +639,44 @@ namespace Wheatech.Modulize
         private void StartupModules(IEnumerable<ModuleDescriptor> modules)
         {
             var assemblies = new List<Assembly>();
+            var startupModules = new List<ModuleDescriptor>();
             foreach (var module in modules)
             {
                 if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.RequireInstall)
                 {
                     assemblies.AddRange(module.GetLoadedAssemblies());
+                    startupModules.Add(module);
                 }
             }
             if (assemblies.Count > 0)
             {
-                ApplicationActivator.Startup(assemblies.Distinct().ToArray());
+                ApplicationActivator.Startup(assemblies.Distinct().Except(_applicationAssemblies).ToArray());
+            }
+            foreach (var module in startupModules)
+            {
+                OnModuleLoaded(new ModuleEventArgs(module));
             }
         }
 
         private void ShutdownModules(IEnumerable<ModuleDescriptor> modules)
         {
+            var assemblies = new List<Assembly>();
+            var shutdownModules = new List<ModuleDescriptor>();
             foreach (var module in modules)
             {
-                if (module.Errors == ModuleErrors.None)
+                if (module.Errors == ModuleErrors.None && module.InstallState != ModuleInstallState.RequireInstall)
                 {
-                    ApplicationActivator.Shutdown(module.GetLoadedAssemblies());
+                    assemblies.AddRange(module.GetLoadedAssemblies());
+                    shutdownModules.Add(module);
                 }
+            }
+            if (assemblies.Count > 0)
+            {
+                ApplicationActivator.Shutdown(assemblies.Distinct().Except(_applicationAssemblies).ToArray());
+            }
+            foreach (var module in shutdownModules)
+            {
+                OnModuleUnloaded(new ModuleEventArgs(module));
             }
         }
 
@@ -636,7 +775,19 @@ namespace Wheatech.Modulize
                   .RemoveMethod.Invoke(null, new object[] { new BuildManagerHostUnloadEventHandler(OnAppDomainShutdown) });
                 AppDomain.CurrentDomain.AssemblyResolve -= OnResolveDepedencyAssembly;
 
-                if (_modules!=null)
+                if (_extensions!=null)
+                {
+                    var toRemove = new List<IModuleContainerExtension>(_extensions);
+                    toRemove.Reverse();
+                    foreach (var extension in toRemove)
+                    {
+                        extension.Remove(this);
+                        (extension as IDisposable)?.Dispose();
+                    }
+                    _extensions = null;
+                }
+
+                if (_modules != null)
                 {
                     ShutdownModules(from module in _modules
                                     where module.InstallState != ModuleInstallState.RequireInstall && module.Errors == ModuleErrors.None
@@ -644,13 +795,134 @@ namespace Wheatech.Modulize
                     _modules = null;
                     _features = null;
                 }
-                if (_configuration!=null)
+                if (_configuration != null)
                 {
                     _configuration.Dispose(disposing);
                     _configuration = null;
                 }
+                if (_events != null)
+                {
+                    _events.Dispose();
+                    _events = null;
+                }
                 _environment = null;
+                _applicationAssemblies = null;
             }
         }
+
+        #region Events
+
+        protected EventHandlerList Events
+        {
+            get
+            {
+                ValidateDisposed();
+                return _events ?? (_events = new EventHandlerList());
+            }
+        }
+
+        public event EventHandler<ModuleEventArgs> ModuleLoaded
+        {
+            add
+            {
+                Events.AddHandler(EventModuleLoaded, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventModuleLoaded, value);
+            }
+        }
+
+        protected virtual void OnModuleLoaded(ModuleEventArgs e)
+        {
+            ((EventHandler<ModuleEventArgs>)Events[EventModuleLoaded])?.Invoke(this, e);
+        }
+
+        public event EventHandler<ModuleEventArgs> ModuleUnloaded
+        {
+            add
+            {
+                Events.AddHandler(EventModuleUnloaded, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventModuleUnloaded, value);
+            }
+        }
+
+        protected virtual void OnModuleUnloaded(ModuleEventArgs e)
+        {
+            ((EventHandler<ModuleEventArgs>)Events[EventModuleUnloaded])?.Invoke(this, e);
+        }
+
+        public event EventHandler<ModuleEventArgs> ModuleInstalled
+        {
+            add
+            {
+                Events.AddHandler(EventModuleInstalled, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventModuleInstalled, value);
+            }
+        }
+
+        protected virtual void OnModuleInstalled(ModuleEventArgs e)
+        {
+            ((EventHandler<ModuleEventArgs>)Events[EventModuleInstalled])?.Invoke(this, e);
+        }
+
+        public event EventHandler<ModuleEventArgs> ModuleUninstalled
+        {
+            add
+            {
+                Events.AddHandler(EventModuleUninstalled, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventModuleUninstalled, value);
+            }
+        }
+
+        protected virtual void OnModuleUninstalled(ModuleEventArgs e)
+        {
+            ((EventHandler<ModuleEventArgs>)Events[EventModuleUninstalled])?.Invoke(this, e);
+        }
+
+        public event EventHandler<FeatureEventArgs> FeatureEnabled
+        {
+            add
+            {
+                Events.AddHandler(EventFeatureEnabled, value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventFeatureEnabled, value);
+            }
+        }
+
+        protected virtual void OnFeatureEnabled(FeatureEventArgs e)
+        {
+            ((EventHandler<FeatureEventArgs>)Events[EventFeatureEnabled])?.Invoke(this, e);
+        }
+
+        public event EventHandler<FeatureEventArgs> FeatureDisabled
+        {
+            add
+            {
+                Events.AddHandler(EventFeatureDisabled,value);
+            }
+            remove
+            {
+                Events.RemoveHandler(EventFeatureDisabled,value);
+            }
+        }
+
+        protected virtual void OnFeatureDisabled(FeatureEventArgs e)
+        {
+            ((EventHandler<FeatureEventArgs>)Events[EventFeatureDisabled])?.Invoke(this, e);
+        }
+
+        #endregion
     }
 }
