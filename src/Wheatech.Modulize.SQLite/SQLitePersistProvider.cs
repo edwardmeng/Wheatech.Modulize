@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data;
+using System.Collections.Concurrent;
 using System.Data.SQLite;
 using System.IO;
 using Wheatech.Modulize.PersistHelper;
@@ -11,9 +11,19 @@ namespace Wheatech.Modulize.SQLite
     /// </summary>
     public class SQLitePersistProvider : IPersistProvider, IDisposable
     {
+        #region Fields
+
         private readonly string _nameOrConnectionString;
         private bool _initialized;
+        private string _connectionString;
         private SQLiteConnection _connection;
+        private ConcurrentDictionary<string, Version> _modules = new ConcurrentDictionary<string, Version>(StringComparer.OrdinalIgnoreCase);
+        private ConcurrentDictionary<string, bool> _features = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        private bool _disposed;
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initialize new instance of <see cref="SQLitePersistProvider"/> by using the specified connection string.
@@ -31,6 +41,8 @@ namespace Wheatech.Modulize.SQLite
         {
         }
 
+        #endregion
+
         /// <summary>
         /// Saves the installed module by using the module ID and the installed version.
         /// </summary>
@@ -40,11 +52,16 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand("INSERT OR REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.Parameters.AddWithValue("Version", version.ToString());
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "INSERT OR REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.Parameters.AddWithValue("Version", version.ToString());
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = version;
             }
         }
 
@@ -56,10 +73,15 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM Modules WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = null;
             }
         }
 
@@ -71,10 +93,15 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand("INSERT OR REPLACE INTO Features(ID) VALUES(@ID)", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "INSERT OR REPLACE INTO Features(ID) VALUES(@ID)";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = true;
             }
         }
 
@@ -86,10 +113,15 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand("DELETE FROM Features WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM Features WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = false;
             }
         }
 
@@ -102,15 +134,23 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                return _features.GetOrAdd(featureId, key =>
                 {
-                    return false;
-                }
-                return Convert.ToInt32(result) > 0;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT COUNT(*) FROM Features WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    if (result == null || Convert.IsDBNull(result))
+                    {
+                        return false;
+                    }
+                    return Convert.ToInt32(result) > 0;
+                });
             }
         }
 
@@ -124,23 +164,26 @@ namespace Wheatech.Modulize.SQLite
         {
             Initialize();
             ValidateDisposed();
-            using (var command = new SQLiteCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                version = _modules.GetOrAdd(moduleId, key =>
                 {
-                    version = null;
-                    return false;
-                }
-                version = new Version(Convert.ToString(result));
-                return true;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT Version FROM Modules WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    return result == null || Convert.IsDBNull(result) ? null : new Version(Convert.ToString(result));
+                });
+                return version != null;
             }
         }
 
         private void ValidateDisposed()
         {
-            if (_connection == null)
+            if (_disposed)
             {
                 throw new ObjectDisposedException("SQLitePersistProvider");
             }
@@ -149,32 +192,68 @@ namespace Wheatech.Modulize.SQLite
         private void Initialize()
         {
             if (_initialized) return;
-            string connectionString;
             if (string.IsNullOrEmpty(_nameOrConnectionString))
             {
-                connectionString = "Data Source=:memory:;Version=3;New=True;";
+                _connectionString = "Data Source=:memory:;Version=3;New=True;Pooling=True;";
             }
-            else if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
+            else if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out _connectionString))
             {
-                connectionString = $"Data Source={PathUtils.ResolvePath(_nameOrConnectionString)};Version=3;";
+                _connectionString = $"Data Source={PathUtils.ResolvePath(_nameOrConnectionString)};Version=3;Pooling=True;";
             }
-            EnsureDatabaseFile(connectionString);
-            _connection = new SQLiteConnection(connectionString);
-            _connection.Open();
-            using (var command = new SQLiteCommand(_connection))
+            EnsureDatabaseFile(ref _connectionString);
+            if (string.Equals(DbHelper.ExtractConnectionStringValue(_connectionString, "Data Source"), ":memory:", StringComparison.OrdinalIgnoreCase))
             {
-                command.CommandType = CommandType.Text;
+                _connection = new SQLiteConnection(_connectionString);
+                _connection.Open();
+            }
+            ExecuteCommand(command =>
+            {
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID TEXT NOT NULL PRIMARY KEY, Version TEXT NOT NULL)";
                 command.ExecuteNonQuery();
 
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Features(ID TEXT NOT NULL PRIMARY KEY)";
                 command.ExecuteNonQuery();
-            }
+            });
             _initialized = true;
         }
 
-        private void EnsureDatabaseFile(string connectionString)
+        private void ExecuteCommand(Action<SQLiteCommand> callback)
         {
+            if (_connection == null)
+            {
+                using (var connection = new SQLiteConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SQLiteCommand())
+                    {
+                        command.Connection = connection;
+                        callback(command);
+                    }
+                }
+            }
+            else
+            {
+                using (var command = new SQLiteCommand())
+                {
+                    command.Connection = _connection;
+                    callback(command);
+                }
+            }
+        }
+
+        private void EnsureDatabaseFile(ref string connectionString)
+        {
+            connectionString = DbHelper.ReplaceConnectionStringValue(connectionString, (name, value) =>
+            {
+                if (string.Equals(name, "Data Source", StringComparison.OrdinalIgnoreCase) || string.Equals(name, "DataSource", StringComparison.OrdinalIgnoreCase) || string.Equals(name, "Data_Source", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.Equals(value, ":memory:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return PathUtils.ResolvePath(value);
+                    }
+                }
+                return value;
+            });
             string dataSource = DbHelper.ExtractConnectionStringValue(connectionString, "Data Source");
             if (!string.IsNullOrEmpty(dataSource) && !string.Equals(dataSource, ":memory:", StringComparison.OrdinalIgnoreCase))
             {
@@ -201,6 +280,9 @@ namespace Wheatech.Modulize.SQLite
                 _connection.Dispose();
                 _connection = null;
             }
+            _modules = null;
+            _features = null;
+            _disposed = true;
         }
     }
 }

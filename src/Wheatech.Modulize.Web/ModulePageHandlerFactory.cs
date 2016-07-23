@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -60,7 +59,7 @@ namespace Wheatech.Modulize.Web
 
         private IList<string> SplitPathSegments(string path)
         {
-            List<string> parts = new List<string>();
+            var parts = new List<string>();
 
             if (string.IsNullOrEmpty(path))
             {

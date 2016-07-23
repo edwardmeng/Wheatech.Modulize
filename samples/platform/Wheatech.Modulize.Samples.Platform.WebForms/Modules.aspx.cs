@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.UI.WebControls;
 
 namespace Wheatech.Modulize.Samples.Platform.WebForms
@@ -566,6 +568,12 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
 
         #endregion
 
+        private bool RequireRestart
+        {
+            get { return (bool?)ViewState["RequiresRestart"] ?? false; }
+            set { ViewState["RequiresRestart"] = value; }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -690,6 +698,23 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
             }
         }
 
+        protected void repeaterModules_OnItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            var moduleId = e.CommandArgument.ToString();
+            switch (e.CommandName)
+            {
+                case "Install":
+                    Modulizer.InstallModules(moduleId);
+                    break;
+                case "Uninstall":
+                    Modulizer.UninstallModules(moduleId);
+                    break;
+            }
+            RequireRestart = true;
+            LoadModules();
+            LoadFeatures();
+        }
+
         protected void repeaterFeatures_OnItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
@@ -699,6 +724,42 @@ namespace Wheatech.Modulize.Samples.Platform.WebForms
                 repeaterFeatureDependencies.DataSource = feature.Dependencies;
                 repeaterFeatureDependencies.DataBind();
             }
+        }
+
+        protected void repeaterFeatures_OnItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            var featureId = e.CommandArgument.ToString();
+            switch (e.CommandName)
+            {
+                case "Enable":
+                    Modulizer.EnableFeatures(featureId);
+                    break;
+                case "Disable":
+                    Modulizer.DisableFeatures(featureId);
+                    break;
+            }
+            LoadModules();
+            LoadFeatures();
+        }
+
+        protected void buttonRestart_OnClick(object sender, EventArgs e)
+        {
+            RequireRestart = false;
+            typeof(HttpRuntime).GetMethod("ShutdownAppDomain", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public, null,
+                new[] { typeof(ApplicationShutdownReason), typeof(string) }, null).Invoke(null, new object[] { ApplicationShutdownReason.ChangeInGlobalAsax, "Change in modules" });
+            ClientScript.RegisterStartupScript(typeof(Modules), "Restarted", $"window.setTimeout(function(){{document.getElementById('{buttonRefresh.ClientID}').click();}},1000);", true);
+        }
+
+        protected override void OnPreRender(EventArgs e)
+        {
+            base.OnPreRender(e);
+            panelWarning.Visible = RequireRestart;
+        }
+
+        protected void buttonRefresh_OnClick(object sender, EventArgs e)
+        {
+            LoadModules();
+            LoadFeatures();
         }
     }
 }

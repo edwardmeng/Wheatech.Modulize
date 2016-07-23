@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using MySql.Data.MySqlClient;
 using Wheatech.Modulize.PersistHelper;
@@ -8,11 +9,17 @@ namespace Wheatech.Modulize.MySql
     /// <summary>
     /// The MySQLPersistProvider implements the methods to use MySQL as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class MySqlPersistProvider : IPersistProvider, IDisposable
+    public class MySqlPersistProvider : IPersistProvider
     {
+        #region Fields
+
         private readonly string _nameOrConnectionString;
         private bool _initialized;
-        private MySqlConnection _connection;
+        private string _connectionString;
+        private readonly ConcurrentDictionary<string, Version> _modules = new ConcurrentDictionary<string, Version>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, bool> _features = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+        #endregion
 
         /// <summary>
         /// Initialize new instance of <see cref="MySqlPersistProvider"/> by using the specified connection string.
@@ -30,31 +37,31 @@ namespace Wheatech.Modulize.MySql
         private void Initialize()
         {
             if (_initialized) return;
-            string connectionString;
-            if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
+            if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out _connectionString))
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ConnectionStringNotFound, _nameOrConnectionString));
             }
-            _connection = new MySqlConnection(connectionString);
-            _connection.Open();
-            using (var command = new MySqlCommand())
+            ExecuteCommand(command =>
             {
-                command.Connection = _connection;
-
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID VARCHAR(256) NOT NULL PRIMARY KEY, Version VARCHAR(256) NOT NULL)";
                 command.ExecuteNonQuery();
 
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Features(ID VARCHAR(256) NOT NULL PRIMARY KEY)";
                 command.ExecuteNonQuery();
-            }
+            });
             _initialized = true;
         }
 
-        private void ValidateDisposed()
+        private void ExecuteCommand(Action<MySqlCommand> callback)
         {
-            if (_connection == null)
+            using (var connection = new MySqlConnection(_connectionString))
             {
-                throw new ObjectDisposedException("MySqlPersistProvider");
+                connection.Open();
+                using (var command = new MySqlCommand())
+                {
+                    command.Connection = connection;
+                    callback(command);
+                }
             }
         }
 
@@ -66,12 +73,16 @@ namespace Wheatech.Modulize.MySql
         public void InstallModule(string moduleId, Version version)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new MySqlCommand("REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.Parameters.AddWithValue("Version", version.ToString());
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "REPLACE INTO Modules(ID, Version) VALUES(@ID, @Version)";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.Parameters.AddWithValue("Version", version.ToString());
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = version;
             }
         }
 
@@ -82,11 +93,15 @@ namespace Wheatech.Modulize.MySql
         public void UninstallModule(string moduleId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new MySqlCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM Modules WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = null;
             }
         }
 
@@ -97,11 +112,15 @@ namespace Wheatech.Modulize.MySql
         public void EnableFeature(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new MySqlCommand("REPLACE INTO Features SET ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "REPLACE INTO Features SET ID=@ID";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = true;
             }
         }
 
@@ -112,11 +131,15 @@ namespace Wheatech.Modulize.MySql
         public void DisableFeature(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new MySqlCommand("DELETE FROM Features WHERE ID=@ID", _connection))
+            lock (featureId)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM Features WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = false;
             }
         }
 
@@ -128,16 +151,23 @@ namespace Wheatech.Modulize.MySql
         public bool GetFeatureEnabled(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new MySqlCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                return _features.GetOrAdd(featureId, key =>
                 {
-                    return false;
-                }
-                return Convert.ToInt32(result) > 0;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT COUNT(*) FROM Features WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    if (result == null || Convert.IsDBNull(result))
+                    {
+                        return false;
+                    }
+                    return Convert.ToInt32(result) > 0;
+                });
             }
         }
 
@@ -150,30 +180,20 @@ namespace Wheatech.Modulize.MySql
         public bool GetModuleInstalled(string moduleId, out Version version)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new MySqlCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                version = _modules.GetOrAdd(moduleId, key =>
                 {
-                    version = null;
-                    return false;
-                }
-                version = new Version(Convert.ToString(result));
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Dispose this instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT Version FROM Modules WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    return result == null || Convert.IsDBNull(result) ? null : new Version(Convert.ToString(result));
+                });
+                return version != null;
             }
         }
     }

@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Web;
 using System.Web.Routing;
+using Wheatech.Modulize.Web.Properties;
 
 namespace Wheatech.Modulize.Web
 {

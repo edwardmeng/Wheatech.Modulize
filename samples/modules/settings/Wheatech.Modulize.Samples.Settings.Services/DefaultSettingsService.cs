@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using Wheatech.Modulize.PersistHelper;
 using Wheatech.Modulize.Samples.Caching;
 using Wheatech.Modulize.Samples.Platform.Services;
@@ -9,6 +12,7 @@ namespace Wheatech.Modulize.Samples.Settings.Services
     {
         private readonly IDatabaseService _database;
         private readonly ICacheService _caching;
+        private readonly IOrderedDictionary _registerdFields = new OrderedDictionary(StringComparer.OrdinalIgnoreCase);
 
         public DefaultSettingsService(IDatabaseService database, ICacheService caching)
         {
@@ -48,6 +52,16 @@ namespace Wheatech.Modulize.Samples.Settings.Services
                 _database.ExecuteNonQuery($"INSERT OR REPLACE INTO \"Settings\"(\"KEY\", \"VALUE\") VALUES('{key.Replace("'", "''")}', '{value.Replace("'", "''")}')");
             }
             _caching.Put(key, (object)value ?? DBNull.Value);
+        }
+
+        public void RegisterField(SettingsField field)
+        {
+            _registerdFields.Add(field.Key, field);
+        }
+
+        public IEnumerable<SettingsField> GetFields()
+        {
+            return _registerdFields.Values.OfType<SettingsField>();
         }
     }
 }

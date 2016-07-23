@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using FirebirdSql.Data.FirebirdClient;
@@ -9,11 +10,17 @@ namespace Wheatech.Modulize.Firebird
     /// <summary>
     /// The FirebirdPersistProvider implements the methods to use Firebird as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class FirebirdPersistProvider : IPersistProvider, IDisposable
+    public class FirebirdPersistProvider : IPersistProvider
     {
+        #region Fields
+
         private readonly string _nameOrConnectionString;
         private bool _initialized;
-        private FbConnection _connection;
+        private string _connectionString;
+        private readonly ConcurrentDictionary<string, Version> _modules = new ConcurrentDictionary<string, Version>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, bool> _features = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+        #endregion
 
         /// <summary>
         /// Initialize new instance of <see cref="FirebirdPersistProvider"/> by using the specified connection string.
@@ -31,17 +38,13 @@ namespace Wheatech.Modulize.Firebird
         private void Initialize()
         {
             if (_initialized) return;
-            string connectionString;
-            if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
+            if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out _connectionString))
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ConnectionStringNotFound, _nameOrConnectionString));
             }
-            EnsureDatabaseFile(ref connectionString);
-            _connection = new FbConnection(connectionString);
-            _connection.Open();
-            using (var command = new FbCommand())
+            EnsureDatabaseFile(ref _connectionString);
+            ExecuteCommand(command =>
             {
-                command.Connection = _connection;
                 command.CommandText = "EXECUTE BLOCK AS BEGIN" + Environment.NewLine +
                                       "IF (NOT EXISTS(SELECT * FROM RDB$RELATIONS WHERE RDB$RELATION_NAME = 'MODULES'))" + Environment.NewLine +
                                       "THEN" + Environment.NewLine +
@@ -55,40 +58,41 @@ namespace Wheatech.Modulize.Firebird
                                       "EXECUTE STATEMENT 'CREATE TABLE FEATURES(ID VARCHAR(256) PRIMARY KEY)';" + Environment.NewLine +
                                       "END";
                 command.ExecuteNonQuery();
-            }
+            });
             _initialized = true;
-        }
-
-        private void ValidateDisposed()
-        {
-            if (_connection == null)
-            {
-                throw new ObjectDisposedException("FirebirdPersistProvider");
-            }
         }
 
         private void EnsureDatabaseFile(ref string connectionString)
         {
             connectionString = DbHelper.ReplaceConnectionStringValue(connectionString, (name, value) =>
             {
-                if (string.Equals(name, "database",StringComparison.OrdinalIgnoreCase)||string.Equals(name, "initial catalog", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(name, "database", StringComparison.OrdinalIgnoreCase) || string.Equals(name, "initial catalog", StringComparison.OrdinalIgnoreCase))
                 {
                     return PathUtils.ResolvePath(value);
                 }
                 return value;
             });
             string dataSource = DbHelper.ExtractConnectionStringValue(connectionString, "database") ?? DbHelper.ExtractConnectionStringValue(connectionString, "initial catalog");
-            if (!string.IsNullOrEmpty(dataSource))
+            if (!string.IsNullOrEmpty(dataSource) && !File.Exists(dataSource))
             {
-                var filePath = PathUtils.ResolvePath(dataSource);
-                if (!File.Exists(filePath))
+                var dirPath = Path.GetDirectoryName(dataSource);
+                if (!string.IsNullOrEmpty(dirPath) && !Directory.Exists(dirPath))
                 {
-                    var dirPath = Path.GetDirectoryName(filePath);
-                    if (!string.IsNullOrEmpty(dirPath) && !Directory.Exists(dirPath))
-                    {
-                        Directory.CreateDirectory(dirPath);
-                    }
-                    FbConnection.CreateDatabase(connectionString, true);
+                    Directory.CreateDirectory(dirPath);
+                }
+                FbConnection.CreateDatabase(connectionString, true);
+            }
+        }
+
+        private void ExecuteCommand(Action<FbCommand> callback)
+        {
+            using (var connection = new FbConnection(_connectionString))
+            {
+                connection.Open();
+                using (var command = new FbCommand())
+                {
+                    command.Connection = connection;
+                    callback(command);
                 }
             }
         }
@@ -101,12 +105,16 @@ namespace Wheatech.Modulize.Firebird
         public void InstallModule(string moduleId, Version version)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new FbCommand("UPDATE OR INSERT INTO MODULES(ID, VERSION) VALUES(@ID, @Version)", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.Parameters.AddWithValue("Version", version.ToString());
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "UPDATE OR INSERT INTO MODULES(ID, VERSION) VALUES(@ID, @Version)";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.Parameters.AddWithValue("Version", version.ToString());
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = version;
             }
         }
 
@@ -117,11 +125,15 @@ namespace Wheatech.Modulize.Firebird
         public void UninstallModule(string moduleId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new FbCommand("DELETE FROM MODULES WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM MODULES WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = null;
             }
         }
 
@@ -132,11 +144,15 @@ namespace Wheatech.Modulize.Firebird
         public void EnableFeature(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new FbCommand("UPDATE OR INSERT INTO FEATURES(ID) VALUES(@ID)", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "UPDATE OR INSERT INTO FEATURES(ID) VALUES(@ID)";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = true;
             }
         }
 
@@ -147,11 +163,15 @@ namespace Wheatech.Modulize.Firebird
         public void DisableFeature(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new FbCommand("DELETE FROM FEATURES WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM FEATURES WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = false;
             }
         }
 
@@ -163,16 +183,23 @@ namespace Wheatech.Modulize.Firebird
         public bool GetFeatureEnabled(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new FbCommand("SELECT COUNT(*) FROM FEATURES WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                return _features.GetOrAdd(featureId, key =>
                 {
-                    return false;
-                }
-                return Convert.ToInt32(result) > 0;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT COUNT(*) FROM FEATURES WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    if (result == null || Convert.IsDBNull(result))
+                    {
+                        return false;
+                    }
+                    return Convert.ToInt32(result) > 0;
+                });
             }
         }
 
@@ -185,30 +212,20 @@ namespace Wheatech.Modulize.Firebird
         public bool GetModuleInstalled(string moduleId, out Version version)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new FbCommand("SELECT VERSION FROM MODULES WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                version = _modules.GetOrAdd(moduleId, key =>
                 {
-                    version = null;
-                    return false;
-                }
-                version = new Version(Convert.ToString(result));
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Dispose this instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT VERSION FROM MODULES WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    return result == null || Convert.IsDBNull(result) ? null : new Version(Convert.ToString(result));
+                });
+                return version != null;
             }
         }
     }

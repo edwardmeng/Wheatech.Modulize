@@ -74,7 +74,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Global.asax" />
     <Content Include="packages.config" />
     <Content Include="..\..\..\tools\wheatech.snk">
       <Link>Properties\wheatech.snk</Link>
@@ -112,9 +111,6 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
     <Compile Include="Modules.aspx.cs">
       <DependentUpon>Modules.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -122,6 +118,7 @@
     <Compile Include="Modules.aspx.designer.cs">
       <DependentUpon>Modules.aspx</DependentUpon>
     </Compile>
+    <Compile Include="PreApplicationStartCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
@@ -144,6 +141,14 @@
     <ProjectReference Include="..\..\..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
       <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
       <Name>Wheatech.Modulize</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wheatech.Modulize.Samples.Platform.Common\Wheatech.Modulize.Samples.Platform.Common.csproj">
+      <Project>{691346dd-015f-4177-852e-af3237f818d9}</Project>
+      <Name>Wheatech.Modulize.Samples.Platform.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wheatech.Modulize.Samples.Platform.Services\Wheatech.Modulize.Samples.Platform.Services.csproj">
+      <Project>{a07e68b9-6f17-45a4-81a8-5a77c368d1ae}</Project>
+      <Name>Wheatech.Modulize.Samples.Platform.Services</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
@@ -184,6 +189,9 @@
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Net.Compilers.1.3.2\build\Microsoft.Net.Compilers.props'))" />
     <Error Condition="!Exists('..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>copy $(SolutionDir)lib\SQLite.Interop.dll $(TargetDir)SQLite.Interop.dll /Y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

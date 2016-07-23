@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data;
+using System.Collections.Concurrent;
 using System.Globalization;
 using Npgsql;
 using Wheatech.Modulize.PersistHelper;
@@ -9,11 +9,17 @@ namespace Wheatech.Modulize.Npgsql
     /// <summary>
     /// The NpgsqlPersistProvider implements the methods to use PostgreSQL as backend of the modulize engine to persist or retrieve the modules and features activation state.
     /// </summary>
-    public class NpgsqlPersistProvider : IPersistProvider, IDisposable
+    public class NpgsqlPersistProvider : IPersistProvider
     {
+        #region Fields
+
         private readonly string _nameOrConnectionString;
         private bool _initialized;
-        private NpgsqlConnection _connection;
+        private string _connectionString;
+        private readonly ConcurrentDictionary<string, Version> _modules = new ConcurrentDictionary<string, Version>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, bool> _features = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+   
+        #endregion
 
         /// <summary>
         /// Initialize new instance of <see cref="NpgsqlPersistProvider"/> by using the specified connection string.
@@ -31,32 +37,31 @@ namespace Wheatech.Modulize.Npgsql
         private void Initialize()
         {
             if (_initialized) return;
-            string connectionString;
-            if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out connectionString))
+            if (!DbHelper.TryGetConnectionString(_nameOrConnectionString, out _connectionString))
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.ConnectionStringNotFound, _nameOrConnectionString));
             }
-            _connection = new NpgsqlConnection(connectionString);
-            _connection.Open();
-            using (var command = new NpgsqlCommand())
+            ExecuteCommand(command =>
             {
-                command.Connection = _connection;
-                command.CommandType = CommandType.Text;
-
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Modules(ID VARCHAR(256) NOT NULL PRIMARY KEY, Version VARCHAR(256) NOT NULL)";
                 command.ExecuteNonQuery();
 
                 command.CommandText = "CREATE TABLE IF NOT EXISTS Features(ID VARCHAR(256) NOT NULL PRIMARY KEY)";
                 command.ExecuteNonQuery();
-            }
+            });
             _initialized = true;
         }
 
-        private void ValidateDisposed()
+        private void ExecuteCommand(Action<NpgsqlCommand> callback)
         {
-            if (_connection == null)
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
-                throw new ObjectDisposedException("NpgsqlPersistProvider");
+                connection.Open();
+                using (var command = new NpgsqlCommand())
+                {
+                    command.Connection = connection;
+                    callback(command);
+                }
             }
         }
 
@@ -68,12 +73,16 @@ namespace Wheatech.Modulize.Npgsql
         public void InstallModule(string moduleId, Version version)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new NpgsqlCommand("INSERT INTO Modules(ID, Version) VALUES(@ID, @Version) ON CONFLICT(ID) DO UPDATE SET Version = @Version",_connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.Parameters.AddWithValue("Version", version.ToString());
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "INSERT INTO Modules(ID, Version) VALUES(@ID, @Version) ON CONFLICT(ID) DO UPDATE SET Version = @Version";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.Parameters.AddWithValue("Version", version.ToString());
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = version;
             }
         }
 
@@ -84,11 +93,15 @@ namespace Wheatech.Modulize.Npgsql
         public void UninstallModule(string moduleId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new NpgsqlCommand("DELETE FROM Modules WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM Modules WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", moduleId);
+                    command.ExecuteNonQuery();
+                });
+                _modules[moduleId] = null;
             }
         }
 
@@ -99,11 +112,15 @@ namespace Wheatech.Modulize.Npgsql
         public void EnableFeature(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new NpgsqlCommand("INSERT INTO Features(ID) VALUES(@ID) ON CONFLICT DO NOTHING", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "INSERT INTO Features(ID) VALUES(@ID) ON CONFLICT DO NOTHING";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = true;
             }
         }
 
@@ -114,11 +131,15 @@ namespace Wheatech.Modulize.Npgsql
         public void DisableFeature(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new NpgsqlCommand("DELETE FROM Features WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                command.ExecuteNonQuery();
+                ExecuteCommand(command =>
+                {
+                    command.CommandText = "DELETE FROM Features WHERE ID=@ID";
+                    command.Parameters.AddWithValue("ID", featureId);
+                    command.ExecuteNonQuery();
+                });
+                _features[featureId] = false;
             }
         }
 
@@ -130,16 +151,23 @@ namespace Wheatech.Modulize.Npgsql
         public bool GetFeatureEnabled(string featureId)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new NpgsqlCommand("SELECT COUNT(*) FROM Features WHERE ID=@ID", _connection))
+            lock (_features)
             {
-                command.Parameters.AddWithValue("ID", featureId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                return _features.GetOrAdd(featureId, key =>
                 {
-                    return false;
-                }
-                return Convert.ToInt32(result) > 0;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT COUNT(*) FROM Features WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    if (result == null || Convert.IsDBNull(result))
+                    {
+                        return false;
+                    }
+                    return Convert.ToInt32(result) > 0;
+                });
             }
         }
 
@@ -152,30 +180,20 @@ namespace Wheatech.Modulize.Npgsql
         public bool GetModuleInstalled(string moduleId, out Version version)
         {
             Initialize();
-            ValidateDisposed();
-            using (var command = new NpgsqlCommand("SELECT Version FROM Modules WHERE ID=@ID", _connection))
+            lock (_modules)
             {
-                command.Parameters.AddWithValue("ID", moduleId);
-                var result = command.ExecuteScalar();
-                if (result == null || Convert.IsDBNull(result))
+                version = _modules.GetOrAdd(moduleId, key =>
                 {
-                    version = null;
-                    return false;
-                }
-                version = new Version(Convert.ToString(result));
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Dispose this instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
+                    object result = null;
+                    ExecuteCommand(command =>
+                    {
+                        command.CommandText = "SELECT Version FROM Modules WHERE ID=@ID";
+                        command.Parameters.AddWithValue("ID", key);
+                        result = command.ExecuteScalar();
+                    });
+                    return result == null || Convert.IsDBNull(result) ? null : new Version(Convert.ToString(result));
+                });
+                return version != null;
             }
         }
     }
