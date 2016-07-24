@@ -26,7 +26,13 @@ namespace Wheatech.Modulize.Web
             {
                 throw new ArgumentNullException(nameof(module));
             }
-            var route = new ModulePageRoute(module, routeUrl, defaults, constraints, dataTokens, new ModulePageRouteHandler(module, physicalFile));
+            var route = new ModulePageRoute(module, routeUrl, defaults, constraints, dataTokens, new ModulePageRouteHandler(module, physicalFile))
+            {
+                DataTokens =
+                {
+                    ["module"] = module
+                }
+            };
             if (string.IsNullOrEmpty(routeName))
             {
                 routes.Add(route);

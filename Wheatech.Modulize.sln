@@ -45,13 +45,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Web", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Samples.Settings.WebForms", "samples\platform\Wheatech.Modulize.Samples.Platform.WebForms\Modules\Settings\Wheatech.Modulize.Samples.Settings.WebForms.csproj", "{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Samples.Platform.Mvc", "samples\platform\Wheatech.Modulize.Samples.Platform.Mvc\Wheatech.Modulize.Samples.Platform.Mvc.csproj", "{440B786B-EEB7-404E-81F7-6BB1139BE441}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Mvc", "src\Wheatech.Modulize.Mvc\Wheatech.Modulize.Mvc.csproj", "{72DF655D-0E0E-4829-AD97-D19734CBCD3F}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Wheatech.Modulize.WebHelper", "src\Wheatech.Modulize.WebHelper\Wheatech.Modulize.WebHelper.shproj", "{B0F53CC3-199E-4AAE-82E9-8AC01A19FE26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wheatech.Modulize.Samples.Settings.Mvc", "samples\platform\Wheatech.Modulize.Samples.Platform.Mvc\Modules\Settings\Wheatech.Modulize.Samples.Settings.Mvc.csproj", "{6297C6F0-3EE0-45EB-9DCC-797EA1F99F6D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{28df6970-3312-4dc2-8ffb-1ef21b32dcc2}*SharedItemsImports = 13
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{5b29d8e9-ee57-4b3f-8e34-4f5edeb0b363}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{63526608-7904-43bb-a486-b234b4b9c13f}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{6fa440e7-b2f4-4c5f-bc1f-0467a132cb52}*SharedItemsImports = 4
+		src\Wheatech.Modulize.WebHelper\Wheatech.Modulize.WebHelper.projitems*{72df655d-0e0e-4829-ad97-d19734cbcd3f}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{a07e68b9-6f17-45a4-81a8-5a77c368d1ae}*SharedItemsImports = 4
+		src\Wheatech.Modulize.WebHelper\Wheatech.Modulize.WebHelper.projitems*{a1861bdd-0fa1-407b-987f-cb1e97e47a5e}*SharedItemsImports = 4
+		src\Wheatech.Modulize.WebHelper\Wheatech.Modulize.WebHelper.projitems*{b0f53cc3-199e-4aae-82e9-8ac01a19fe26}*SharedItemsImports = 13
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{bbdb050e-98a0-47f4-8806-36413899167a}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{c46d1927-61dc-4231-a8b3-11612349dd52}*SharedItemsImports = 4
 		src\Wheatech.Modulize.PersistHelper\Wheatech.Modulize.PersistHelper.projitems*{c99951a7-c514-44aa-be89-f3f4baffedbb}*SharedItemsImports = 4
@@ -122,6 +133,18 @@ Global
 		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{440B786B-EEB7-404E-81F7-6BB1139BE441}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{440B786B-EEB7-404E-81F7-6BB1139BE441}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{440B786B-EEB7-404E-81F7-6BB1139BE441}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{440B786B-EEB7-404E-81F7-6BB1139BE441}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72DF655D-0E0E-4829-AD97-D19734CBCD3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72DF655D-0E0E-4829-AD97-D19734CBCD3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72DF655D-0E0E-4829-AD97-D19734CBCD3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72DF655D-0E0E-4829-AD97-D19734CBCD3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6297C6F0-3EE0-45EB-9DCC-797EA1F99F6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6297C6F0-3EE0-45EB-9DCC-797EA1F99F6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6297C6F0-3EE0-45EB-9DCC-797EA1F99F6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6297C6F0-3EE0-45EB-9DCC-797EA1F99F6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,5 +168,9 @@ Global
 		{691346DD-015F-4177-852E-AF3237F818D9} = {5F0B121E-DCCE-46D7-B984-41EDE6AD8314}
 		{A1861BDD-0FA1-407B-987F-CB1E97E47A5E} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
 		{F71D4367-BD2D-4FF7-A9F4-51C4EED88AD7} = {FF137302-1510-47DD-91E7-D728FDA93DF3}
+		{440B786B-EEB7-404E-81F7-6BB1139BE441} = {5F0B121E-DCCE-46D7-B984-41EDE6AD8314}
+		{72DF655D-0E0E-4829-AD97-D19734CBCD3F} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
+		{B0F53CC3-199E-4AAE-82E9-8AC01A19FE26} = {1A208732-3359-4AA7-BFEF-F2333DB6E5F8}
+		{6297C6F0-3EE0-45EB-9DCC-797EA1F99F6D} = {FF137302-1510-47DD-91E7-D728FDA93DF3}
 	EndGlobalSection
 EndGlobal
