@@ -73,7 +73,7 @@ namespace Wheatech.Modulize.Mvc
         private const string CacheKeyPrefixView = "View";
         private readonly Func<string, string> GetExtensionThunk = VirtualPathUtility.GetExtension;
 
-        public ModuleRazorViewEngine():this(null)
+        public ModuleRazorViewEngine() : this(null)
         {
         }
 
@@ -88,7 +88,7 @@ namespace Wheatech.Modulize.Mvc
             };
             ModuleAreaMasterLocationFormats = ModuleAreaViewLocationFormats;
             ModuleAreaPartialLocationFormats = ModuleAreaViewLocationFormats;
-            ModuleViewLocationFormats=new[]
+            ModuleViewLocationFormats = new[]
             {
                 "{2}/Views/{1}/{0}.cshtml",
                 "{2}/Views/{1}/{0}.vbhtml",

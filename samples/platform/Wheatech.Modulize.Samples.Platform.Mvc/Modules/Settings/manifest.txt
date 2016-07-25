@@ -1,0 +1,8 @@
+﻿ID: Settings
+Author: Edward Meng, Lenore
+Version: 1.0.1
+Category: Configuration
+Description: Provides a page to configure the basic settings.
+License: MIT
+Dependency: Caching
+Assembly: Wheatech.Modulize.Samples.Settings.Bootstrap

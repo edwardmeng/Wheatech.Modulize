@@ -1,0 +1,200 @@
+﻿@using Wheatech.Modulize
+@using Wheatech.Modulize.Samples.Platform.Common
+@{
+    ViewBag.Title = "Modules & Features";
+}
+@section styles{
+    @Styles.Render("~/Content/module.css")
+}
+<ul class="nav nav-tabs" role="tablist" id="tabs-prices">
+    <li role="presentation" class="active">
+        <a href="#tabpane-modules" aria-controls="tabpane-modules" role="tab" data-toggle="tab" class="active">Modules</a>
+    </li>
+    <li role="presentation">
+        <a href="#tabpane-features" aria-controls="tabpane-features" role="tab" data-toggle="tab">Features</a>
+    </li>
+</ul>
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="tabpane-modules">
+        <ul class="media-list">
+            @foreach (ModuleDescriptor module in ViewBag.Modules)
+            {
+                var moduleCssClass = module.InstallState == ModuleInstallState.Installed ? " installed" : "uninstalled";
+                <li class="media @moduleCssClass">
+                    <div class="media-body">
+                        <div class="media-heading">
+                            @module.ModuleName - @module.ModuleVersion
+                            @if (module.Errors.HasFlag(ModuleErrors.IncompatibleHost))
+                            {
+                                <span class="forbidden">The module version is incompatible with hosting application.</span>
+                            }
+                            @if (module.Errors.HasFlag(ModuleErrors.ForbiddenFeatures))
+                            {
+                                <span class="forbidden">All the features underlying the module have been forbidden.</span>
+                            }
+                            <div class="tools">
+                                @if (module.InstallState == ModuleInstallState.RequireInstall && module.HasInstallers && module.Errors == ModuleErrors.None)
+                                {
+                                    <button class="btn btn-xs btn-link">Install</button>
+                                }
+                                @if (module.InstallState == ModuleInstallState.Installed && module.HasUninstallers && module.Errors == ModuleErrors.None)
+                                {
+                                    <button class="btn btn-xs btn-link" onclick="return confirm('Are you sure you want to uninstall this module?')">Uninstall</button>
+                                }
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(module.Description))
+                        {
+                            <div class="media-description">
+                                @Html.Raw(Html.Encode(module.Description).Replace("\n", "<br/>").Replace(" ", "&nbsp;"))
+                            </div>
+                        }
+                        <div class="media-footer">
+                            <div>
+                                Features:
+                                @for (int i = 0; i < module.Features.Count; i++)
+                                {
+                                    if (i > 0)
+                                    {
+                                        <span>, </span>
+                                    }
+                                    @module.Features[i].FeatureName
+                                }
+                                @if ((module.Authors != null && module.Authors.Length > 0) || !string.IsNullOrWhiteSpace(module.WebSite) || !string.IsNullOrWhiteSpace(module.License))
+                                {
+                                    <span> | </span>
+                                }
+                            </div>
+                            @if (module.Authors != null && module.Authors.Length > 0)
+                            {
+                                <div>
+                                    Authors：@string.Join(" ", module.Authors)
+                                    @if (!string.IsNullOrWhiteSpace(module.WebSite) || !string.IsNullOrWhiteSpace(module.License))
+                                    {
+                                        <span> | </span>
+                                    }
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(module.WebSite))
+                            {
+                                <div>
+                                    WebSite：<a target="_blank" href="@module.WebSite">@module.WebSite</a>
+                                    @if (!string.IsNullOrWhiteSpace(module.License))
+                                    {
+                                        <span> | </span>
+                                    }
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(module.License))
+                            {
+                                LicenseData license;
+
+                                <div>
+                                    License:
+                                    @if (module.License.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || module.License.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a target="_blank" href="@module.License">@module.License</a>
+                                    }
+                                    else if (LicenseHelper.Matches(module.License, out license))
+                                    {
+                                        <a target="_blank" href="@license.Url" title="@license.FullName">@license.ShortName</a>
+                                    }
+                                    else
+                                    {
+                                        <span>@module.License</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+    <div role="tabpanel" class="tab-pane fade in" id="tabpane-features">
+        <ul class="media-list">
+            @foreach (FeatureDescriptor feature in ViewBag.Features)
+            {
+                var featureCssClass = feature.EnableState == FeatureEnableState.Enabled ? " enabled" : "disabled";
+                <li class="media @featureCssClass">
+                    <div class="media-body">
+                        <div class="media-heading">
+                            @feature.FeatureName
+                            @if (feature.Errors.HasFlag(FeatureErrors.ForbiddenModule))
+                            {
+                                <span class="forbidden">The module '@feature.Module.ModuleName' has been forbidden.</span>
+                            }
+                            else if (feature.Errors.HasFlag(FeatureErrors.UninstallModule))
+                            {
+                                <span class="forbidden">The module '@feature.Module.ModuleName' has not been installed.</span>
+                            }
+                            else if (feature.Errors.HasFlag(FeatureErrors.MissingDependency))
+                            {
+                                var missingDependencies = from dependency in feature.Dependencies where Modulizer.GetFeature(dependency.FeatureId) == null select dependency.FeatureId;
+                                <span class="forbidden">The dependency features are missing: @string.Join(", ", missingDependencies)</span>
+                            }
+                            else if (feature.Errors.HasFlag(FeatureErrors.ForbiddenDependency))
+                            {
+                                var forbiddenDependencies = from dependency in feature.Dependencies
+                                                            let dependencyFeature = Modulizer.GetFeature(dependency.FeatureId)
+                                                            where dependencyFeature != null && dependencyFeature.Errors != FeatureErrors.None
+                                                            select dependencyFeature?.FeatureName;
+                                <span class="forbidden">The dependency features have been forbidden: @string.Join(", ", forbiddenDependencies)</span>
+                            }
+                            else if (feature.Errors.HasFlag(FeatureErrors.IncompatibleDependency))
+                            {
+                                var incompatibleDependencies = from dependency in feature.Dependencies
+                                                               let dependencyFeature = Modulizer.GetFeature(dependency.FeatureId)
+                                                               where dependencyFeature != null && dependencyFeature.Errors == FeatureErrors.None && dependency.Version != null && !dependency.Version.Match(dependencyFeature.Module.ModuleVersion)
+                                                               select dependencyFeature?.FeatureName;
+                                <span class="forbidden">The dependency features are incompatible: @string.Join(", ", incompatibleDependencies)</span>
+                            }
+                            else if (feature.Errors.HasFlag(FeatureErrors.DisabledDependency))
+                            {
+                                var disabledDependencies = from dependency in feature.Dependencies
+                                                           let dependencyFeature = Modulizer.GetFeature(dependency.FeatureId)
+                                                           where dependencyFeature != null && dependencyFeature.EnableState == FeatureEnableState.RequireEnable && dependencyFeature.Errors == FeatureErrors.None
+                                                           select dependencyFeature?.FeatureName;
+                                <span class="forbidden">The dependency features have not been enabled: @string.Join(", ", disabledDependencies)</span>
+                            }
+                            <div class="tools">
+                                @if (feature.EnableState == FeatureEnableState.RequireEnable && feature.Errors == FeatureErrors.None && feature.CanEnable)
+                                {
+                                    <button class="btn btn-xs btn-link">Enable</button>
+                                }
+                                @if (feature.EnableState == FeatureEnableState.Enabled && feature.Errors == FeatureErrors.None && feature.CanDisable)
+                                {
+                                    <button class="btn btn-xs btn-link" onclick="return confirm('Are you sure you want to disable this feature?')">Disable</button>
+                                }
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(feature.Description))
+                        {
+                            <div class="media-description">
+                                @Html.Raw(Html.Encode(feature.Description).Replace("\n", "<br />").Replace(" ", "&nbsp;"))
+                            </div>
+                        }
+                        @if (feature.Dependencies.Count > 0)
+                        {
+                            <div class="media-footer">
+                                Dependencies：
+                                @for (int i = 0; i < feature.Dependencies.Count; i++)
+                                {
+                                    var dependency = feature.Dependencies[i];
+                                    var dependencyFeature = Modulizer.GetFeature(dependency.FeatureId);
+                                    var dependencyName = dependencyFeature == null ? dependency.FeatureId : dependencyFeature.FeatureName;
+                                    if (i > 0)
+                                    {
+                                        <span>, </span>
+                                    }
+                                    @dependencyName
+                                }
+                            </div>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+
+    </div>
+</div>

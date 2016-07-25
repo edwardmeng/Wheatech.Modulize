@@ -1,0 +1,49 @@
+﻿.media-list {
+    border: 1px solid #eaeaea;
+    border-bottom: none;
+}
+
+.media {
+    overflow: hidden;
+    padding: 1.2em 1.4em;
+    border-bottom: 1px solid #eaeaea;
+    margin-top: 0;
+}
+
+    .media.enabled {
+        background: #FFF;
+    }
+
+    .media.disabled {
+        background: #f3f3f3;
+    }
+
+    .media.installed {
+        background: #FFF;
+    }
+
+    .media.uninstalled {
+        background: #f3f3f3;
+    }
+
+    .media .forbidden {
+        color: #d9534f;
+        margin-left: 20px;
+    }
+
+.media-heading {
+    font-size: 1.308em;
+}
+
+    .media-heading .tools {
+        float: right;
+    }
+
+.media-description {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.media-footer > div {
+    display: inline-block;
+}

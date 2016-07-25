@@ -132,7 +132,7 @@
                             <div class="media-body">
                                 <div class="media-heading">
                                     <%# HttpUtility.HtmlEncode(Item.FeatureName) %>
-                                    <asp:Label runat="server" mode="Encode" CssClass="forbidden" Text='<%# GetFeatureErrors(Item, Item.Errors) %>' Visible='<%# Item.Errors!= FeatureErrors.None %>'></asp:Label>
+                                    <asp:Label runat="server" CssClass="forbidden" Text='<%# GetFeatureErrors(Item, Item.Errors) %>' Visible='<%# Item.Errors!= FeatureErrors.None %>'></asp:Label>
                                     <div class="tools">
                                         <asp:Button runat="server" ID="buttonEnable" CssClass="btn btn-xs btn-link" Text="Enable" CommandName="Enable" CommandArgument='<%# Item.FeatureId %>'
                                             Visible='<%# Item.EnableState == FeatureEnableState.RequireEnable && Item.Errors== FeatureErrors.None && Item.CanEnable%>'></asp:Button>
@@ -149,7 +149,7 @@
                                        
                                     <asp:Repeater runat="server" ID="repeaterFeatureDependencies" ItemType="Wheatech.Modulize.DependencyDescriptor">
                                         <ItemTemplate>
-                                            <asp:Label runat="server" Mode="Encode" Text='<%# Modulizer.GetFeatures().SingleOrDefault(x=>x.FeatureId==Item.FeatureId)?.FeatureName??Item.FeatureId %>'></asp:Label>
+                                            <asp:Label runat="server" Text='<%# Modulizer.GetFeature(Item.FeatureId)?.FeatureName??Item.FeatureId %>'></asp:Label>
                                         </ItemTemplate>
                                         <SeparatorTemplate>, </SeparatorTemplate>
                                     </asp:Repeater>

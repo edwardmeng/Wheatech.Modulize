@@ -5,7 +5,7 @@ namespace Wheatech.Modulize.Mvc
 {
     public class Startup
     {
-        public void Configuration()
+        public void Configuration(IModuleContainer container)
         {
             var razorEngine = ViewEngines.Engines.OfType<RazorViewEngine>().SingleOrDefault();
             if (razorEngine != null)
@@ -13,6 +13,8 @@ namespace Wheatech.Modulize.Mvc
                 ViewEngines.Engines.Remove(razorEngine);
             }
             ViewEngines.Engines.Add(new ModuleRazorViewEngine());
+
+            container.AddExtension<MvcModuleRoutingExtension>();
         }
     }
 }

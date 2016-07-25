@@ -92,16 +92,39 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="manifest.txt" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsModuleRegistration.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Web.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Wheatech.Modulize.Mvc\Wheatech.Modulize.Mvc.csproj">
+      <Project>{72df655d-0e0e-4829-ad97-d19734cbcd3f}</Project>
+      <Name>Wheatech.Modulize.Mvc</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\..\src\Wheatech.Modulize\Wheatech.Modulize.csproj">
+      <Project>{49336df7-d12e-4945-9657-f44408a6edcf}</Project>
+      <Name>Wheatech.Modulize</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\modules\settings\Wheatech.Modulize.Samples.Settings.Bootstrap\Wheatech.Modulize.Samples.Settings.Bootstrap.csproj">
+      <Project>{56aad1a9-b3e1-4820-83f1-c8e1251a924f}</Project>
+      <Name>Wheatech.Modulize.Samples.Settings.Bootstrap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\modules\settings\Wheatech.Modulize.Samples.Settings.Services\Wheatech.Modulize.Samples.Settings.Services.csproj">
+      <Project>{63526608-7904-43bb-a486-b234b4b9c13f}</Project>
+      <Name>Wheatech.Modulize.Samples.Settings.Services</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Wheatech.Modulize.Samples.Platform.Common\Wheatech.Modulize.Samples.Platform.Common.csproj">
+      <Project>{691346dd-015f-4177-852e-af3237f818d9}</Project>
+      <Name>Wheatech.Modulize.Samples.Platform.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>

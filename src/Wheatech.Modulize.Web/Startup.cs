@@ -4,7 +4,7 @@
     {
         public void Configuration(IModuleContainer container)
         {
-            container.AddExtension(new ModuleWebAssemblyExtension());
+            container.AddExtension<ModuleWebAssemblyExtension>();
         }
     }
 }

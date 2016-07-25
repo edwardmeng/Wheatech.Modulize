@@ -39,5 +39,15 @@ namespace Wheatech.Modulize
             }
             container.DisableFeatures(features);
         }
+
+        public static void AddExtension<TExtension>(this IModuleContainer container)
+            where TExtension : IModuleContainerExtension, new()
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
+            container.AddExtension(new TExtension());
+        }
     }
 }
