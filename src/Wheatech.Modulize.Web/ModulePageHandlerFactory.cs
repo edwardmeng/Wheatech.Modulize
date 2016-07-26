@@ -6,11 +6,11 @@ namespace Wheatech.Modulize.Web
 {
     internal class ModulePageHandlerFactory : PageHandlerFactory
     {
-        private readonly string _modulePath;
+        private readonly ModuleDescriptor _module;
 
-        protected internal ModulePageHandlerFactory(string modulePath)
+        protected internal ModulePageHandlerFactory(ModuleDescriptor module)
         {
-            _modulePath = modulePath;
+            _module = module;
         }
 
         public virtual IHttpHandler GetHandler(HttpContextBase context, string virtualPath)
@@ -21,7 +21,7 @@ namespace Wheatech.Modulize.Web
             {
                 virtualPath = virtualPath.Substring(0, qmark);
             }
-            virtualPath = PathHelper.ToAppRelativePath(context, PathUtils.ResolvePath(_modulePath, virtualPath));
+            virtualPath = PathHelper.ToAppRelativePath(context, PathUtils.ResolvePath(_module.ShadowPath, virtualPath));
             return base.GetHandler(context.ApplicationInstance.Context, context.Request.RequestType, virtualPath, null);
         }
     }

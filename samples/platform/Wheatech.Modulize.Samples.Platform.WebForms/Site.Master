@@ -15,8 +15,10 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <asp:ContentPlaceHolder ID="main" runat="server">
-        </asp:ContentPlaceHolder>
+        <div class="container">
+            <asp:ContentPlaceHolder ID="main" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
     </form>
     <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/jquery-2.2.4.min.js") %>"></script>
     <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/bootstrap.min.js") %>"></script>

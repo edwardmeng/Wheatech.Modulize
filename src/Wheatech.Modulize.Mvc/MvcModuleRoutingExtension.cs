@@ -15,6 +15,7 @@
 
         public void Remove(IModuleContainer container)
         {
+            container.ModuleLoaded -= OnModuleLoaded;
         }
     }
 }

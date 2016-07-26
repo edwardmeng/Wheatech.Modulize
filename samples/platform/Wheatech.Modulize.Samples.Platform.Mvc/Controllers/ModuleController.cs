@@ -4,7 +4,7 @@ using System.Web.Mvc;
 
 namespace Wheatech.Modulize.Samples.Platform.Mvc.Controllers
 {
-    public class ModuleController:Controller
+    public class ModuleController : Controller
     {
         public ViewResult Index()
         {

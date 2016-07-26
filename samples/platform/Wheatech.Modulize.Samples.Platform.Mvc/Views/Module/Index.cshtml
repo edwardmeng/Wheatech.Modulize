@@ -6,6 +6,12 @@
 @section styles{
     @Styles.Render("~/Content/module.css")
 }
+@if (((bool?)ViewBag.RequireRestart).HasValue&& ((bool?)ViewBag.RequireRestart).Value)
+{
+    <div class="alert alert-warning" id="panelWarning">
+        There are some modules installed or uninstalled, and the application requires to be <a href="#">restarted</a>.
+    </div>
+}
 <ul class="nav nav-tabs" role="tablist" id="tabs-prices">
     <li role="presentation" class="active">
         <a href="#tabpane-modules" aria-controls="tabpane-modules" role="tab" data-toggle="tab" class="active">Modules</a>

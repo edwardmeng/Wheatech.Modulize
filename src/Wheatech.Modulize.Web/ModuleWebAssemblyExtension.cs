@@ -18,6 +18,7 @@ namespace Wheatech.Modulize.Web
                 {
                     BuildManager.AddReferencedAssembly(assembly);
                 }
+                ModuleRegistration.RegisterModule(e.Module);
             }
             catch (InvalidOperationException)
             {

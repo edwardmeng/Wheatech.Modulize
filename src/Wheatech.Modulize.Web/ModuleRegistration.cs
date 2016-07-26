@@ -2,7 +2,7 @@
 using System.Web.Routing;
 using Wheatech.Modulize.WebHelper;
 
-namespace Wheatech.Modulize.Mvc
+namespace Wheatech.Modulize.Web
 {
     public abstract class ModuleRegistration
     {
@@ -24,7 +24,7 @@ namespace Wheatech.Modulize.Mvc
         {
             foreach (Type type in module.FilterTypesInModule(IsModuleRegistrationType))
             {
-                var registration = (ModuleRegistration) Activator.CreateInstance(type);
+                var registration = (ModuleRegistration)Activator.CreateInstance(type);
                 registration.Module = module;
                 registration.CreateContextAndRegister(routes, module, state);
             }
@@ -32,13 +32,7 @@ namespace Wheatech.Modulize.Mvc
 
         internal void CreateContextAndRegister(RouteCollection routes, ModuleDescriptor module, object state)
         {
-            var context = new ModuleRegistrationContext(module, routes, state);
-            string ns = GetType().Namespace;
-            if (!string.IsNullOrEmpty(ns))
-            {
-                context.Namespaces.Add(ns + ".*");
-            }
-            RegisterModule(context);
+            RegisterModule(new ModuleRegistrationContext(module, routes, state));
         }
 
         private static bool IsModuleRegistrationType(Type type)

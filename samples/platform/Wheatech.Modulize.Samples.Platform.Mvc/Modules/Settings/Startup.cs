@@ -1,6 +1,6 @@
 ﻿using Wheatech.Modulize.Samples.Settings.Services;
 
-namespace Wheatech.Modulize.Samples.Settings.WebForms
+namespace Wheatech.Modulize.Samples.Settings.Mvc
 {
     public class Startup
     {

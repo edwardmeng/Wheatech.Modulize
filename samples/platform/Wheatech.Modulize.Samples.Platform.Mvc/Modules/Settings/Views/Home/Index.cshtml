@@ -1,3 +1,13 @@
 ﻿@{
     ViewBag.Title = "Settings";
 }
+@model Wheatech.Modulize.Samples.Settings.Mvc.Model.SettingModel[]
+@foreach (var setting in Model)
+{
+    <div style="width: 200px; float: left">
+        @setting.Name
+    </div>
+    <div class="width: calc(100% - 200px); float:left">
+        @Html.TextBox(setting.Key, setting.Value,new {@class= "form-control", style= "max-width: 250px;" })
+    </div>
+}

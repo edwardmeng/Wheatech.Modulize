@@ -5,19 +5,24 @@ namespace Wheatech.Modulize.Mvc
 {
     internal static class ModuleHelper
     {
-        public static string GetModule(RouteData routeData)
+        public static ModuleDescriptor GetModule(RouteData routeData)
         {
             object value;
             if (routeData.DataTokens.TryGetValue("module", out value))
             {
-                return value as string;
+                return (ModuleDescriptor)value;
             }
             return GetModule(routeData.Route);
         }
 
-        public static string GetModule(RouteBase route)
+        public static ModuleDescriptor GetModule(RouteBase route)
         {
-            return (route as IRouteWithModule)?.Module ?? (route as Route)?.DataTokens?["area"] as string;
+            var moduleId = (route as IRouteWithModule)?.Module;
+            if (moduleId != null)
+            {
+                return Modulizer.GetModule(moduleId);
+            }
+            return (route as Route)?.DataTokens?["module"] as ModuleDescriptor;
         }
 
         public static string GetAreaName(RouteBase route)

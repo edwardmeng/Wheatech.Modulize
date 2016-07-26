@@ -117,10 +117,10 @@ namespace Wheatech.Modulize.Mvc
             return c == '~' || c == '/';
         }
 
-        private string CreateCacheKey(string prefix, string name, string controllerName, string areaName, string module)
+        private string CreateCacheKey(string prefix, string name, string controllerName, string areaName, ModuleDescriptor module)
         {
             return string.Format(CultureInfo.InvariantCulture, CacheKeyFormat,
-                                 GetType().AssemblyQualifiedName, prefix, name, controllerName, areaName, module);
+                                 GetType().AssemblyQualifiedName, prefix, name, controllerName, areaName, module?.ModuleId);
         }
 
         private static string AppendDisplayModeToCacheKey(string cacheKey, string displayMode)
@@ -183,7 +183,7 @@ namespace Wheatech.Modulize.Mvc
             searchedLocations = new string[0];
             if (string.IsNullOrEmpty(name)) return string.Empty;
             var module = ModuleHelper.GetModule(controllerContext.RouteData);
-            bool usingModule = !string.IsNullOrEmpty(module);
+            bool usingModule = module!=null;
             var area = ModuleHelper.GetAreaName(controllerContext.RouteData);
             bool usingAreas = !string.IsNullOrEmpty(area);
             var viewLocations = GetViewLocations(locations, usingAreas ? areaLocations : null, usingModule ? moduleLocations : null,
@@ -223,12 +223,11 @@ namespace Wheatech.Modulize.Mvc
                 : GetPathFromGeneralName(controllerContext, viewLocations, name, controllerName, area, module, cacheKey, ref searchedLocations);
         }
 
-        private string GetPathFromGeneralName(ControllerContext controllerContext, List<ViewLocation> locations, string name, string controllerName, string areaName, string moduleName, string cacheKey,
+        private string GetPathFromGeneralName(ControllerContext controllerContext, List<ViewLocation> locations, string name, string controllerName, string areaName, ModuleDescriptor module, string cacheKey,
             ref string[] searchedLocations)
         {
             string result = string.Empty;
             searchedLocations = new string[locations.Count];
-            var module = string.IsNullOrEmpty(moduleName) ? null : Modulizer.GetModule(moduleName);
             var modulePath = module == null ? null : PathHelper.ToAppRelativePath(controllerContext.HttpContext, module.ShadowPath);
             for (int i = 0; i < locations.Count; i++)
             {

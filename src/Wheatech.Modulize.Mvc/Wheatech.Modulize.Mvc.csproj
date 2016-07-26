@@ -72,7 +72,6 @@
     <Compile Include="IRouteWithModule.cs" />
     <Compile Include="ModuleAreaRegistration.cs" />
     <Compile Include="ModuleAreaRegistrationContext.cs" />
-    <Compile Include="ModuleExtensions.cs" />
     <Compile Include="ModuleHelper.cs" />
     <Compile Include="ModuleRazorViewEngine.cs" />
     <Compile Include="ModuleRegistration.cs" />

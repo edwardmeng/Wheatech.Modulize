@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Globalization;
 using System.Web;
 using System.Web.Routing;
-using Wheatech.Modulize.Web.Properties;
 
 namespace Wheatech.Modulize.Web
 {
@@ -12,18 +10,13 @@ namespace Wheatech.Modulize.Web
         private Route _routeVirtualPath;
         private readonly ModulePageHandlerFactory _handlerFactory;
 
-        public ModulePageRouteHandler(string moduleId, string virtualPath)
+        public ModulePageRouteHandler(ModuleDescriptor module, string virtualPath)
         {
-            if (string.IsNullOrEmpty(moduleId))
-            {
-                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(moduleId));
-            }
-            var module = Modulizer.GetModule(moduleId);
             if (module == null)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Argument_ModuleNotFound, moduleId));
+                throw new ArgumentNullException(nameof(module));
             }
-            _handlerFactory = new ModulePageHandlerFactory(module.ShadowPath);
+            _handlerFactory = new ModulePageHandlerFactory(module);
             VirtualPath = virtualPath;
             _useRouteVirtualPath = !string.IsNullOrEmpty(virtualPath) && VirtualPath.Contains("{");
         }
@@ -46,11 +39,6 @@ namespace Wheatech.Modulize.Web
                 throw new ArgumentNullException(nameof(requestContext));
             }
             string virtualPath = GetSubstitutedVirtualPath(requestContext);
-            if (string.IsNullOrEmpty(virtualPath))
-            {
-                virtualPath = (string)requestContext.RouteData.DataTokens["Module_RelativePath"];
-            }
-            requestContext.RouteData.DataTokens.Remove("Module_RelativePath");
             if (string.IsNullOrEmpty(virtualPath)) return null;
             return _handlerFactory.GetHandler(requestContext.HttpContext, virtualPath);
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web.Routing;
+using Wheatech.Modulize.WebHelper;
 
 namespace Wheatech.Modulize.Mvc
 {
