@@ -1,16 +1,18 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Settings.aspx.cs" Inherits="Wheatech.Modulize.Samples.Settings.WebForms.Settings" %>
+<%@ Import Namespace="Wheatech.Modulize.Web" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="header" runat="server">
+    <link rel="stylesheet" type="text/css" href="<%= this.ResolveModuleUrl("~/Styles/settings.css") %>" />
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="main" runat="server">
     <asp:Repeater runat="server" ID="repeaterFields" ItemType="Wheatech.Modulize.Samples.Settings.Services.SettingsField" OnItemDataBound="repeaterFields_OnItemDataBound">
         <ItemTemplate>
-            <div style="width: 200px; float: left">
+            <div class="settings-header">
                 <%# Server.HtmlEncode(Item.Name) %>
             </div>
-            <div class="width: calc(100% - 200px); float:left">
+            <div class="settings-body">
                 <asp:TextBox runat="server" ID="textKey" Visible="False" Text='<%# Item.Key %>'></asp:TextBox>
-                <asp:TextBox runat="server" CssClass="form-control" Style="max-width: 250px;" ID="textValue"></asp:TextBox>
+                <asp:TextBox runat="server" CssClass="form-control" ID="textValue"></asp:TextBox>
             </div>
         </ItemTemplate>
     </asp:Repeater>

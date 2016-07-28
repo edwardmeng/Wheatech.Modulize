@@ -1,0 +1,11 @@
+﻿.settings-header {
+    width: 200px; float: left
+}
+
+.settings-body {
+    width: calc(100% - 200px); float:left
+}
+
+.settings-body input[type=text] {
+    max-width: 250px;
+}

@@ -9,9 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="<%= ResolveUrl("~/Content/bootstrap.min.css") %>" />
     <link rel="stylesheet" type="text/css" href="<%= ResolveUrl("~/Content/bootstrap-theme.min.css") %>" />
-    <title><%= Page.Title %></title>
     <asp:ContentPlaceHolder ID="header" runat="server">
     </asp:ContentPlaceHolder>
+    <title><%= Page.Title %></title>
 </head>
 <body>
     <form id="form1" runat="server">

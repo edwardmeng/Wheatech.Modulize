@@ -38,5 +38,10 @@ namespace Wheatech.Modulize.Samples.Settings.WebForms
                 textValue.Text = this.GetService<ISettingsService>().Get(((SettingsField) e.Item.DataItem).Key);
             }
         }
+
+        protected new string ResolveUrl(string relativeUrl)
+        {
+            return base.ResolveUrl(relativeUrl);
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace Wheatech.Modulize.Web
     internal class ModulePageHandlerFactory : PageHandlerFactory
     {
         private readonly ModuleDescriptor _module;
+        internal static readonly object PageContextKey = new object();
 
         protected internal ModulePageHandlerFactory(ModuleDescriptor module)
         {
@@ -22,7 +23,12 @@ namespace Wheatech.Modulize.Web
                 virtualPath = virtualPath.Substring(0, qmark);
             }
             virtualPath = PathHelper.ToAppRelativePath(context, PathUtils.ResolvePath(_module.ShadowPath, virtualPath));
-            return base.GetHandler(context.ApplicationInstance.Context, context.Request.RequestType, virtualPath, null);
+            var page = (Page)base.GetHandler(context.ApplicationInstance.Context, context.Request.RequestType, virtualPath, null);
+            if (page != null)
+            {
+                page.Items[PageContextKey] = _module;
+            }
+            return page;
         }
     }
 }

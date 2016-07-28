@@ -50,6 +50,7 @@
     <Compile Include="ModuleRegistration.cs" />
     <Compile Include="ModuleRegistrationContext.cs" />
     <Compile Include="ModuleWebAssemblyExtension.cs" />
+    <Compile Include="PageExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Properties\Strings.Designer.cs">
