@@ -2,7 +2,8 @@
 <%@ Import Namespace="Wheatech.Modulize.Web" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="header" runat="server">
-    <link rel="stylesheet" type="text/css" href="<%= this.ResolveModuleUrl("~/Styles/settings.css") %>" />
+    <webopt:BundleReference runat="server" Path="~/settings/styles"></webopt:BundleReference>
+<%--    <link rel="stylesheet" type="text/css" href="<%= this.ResolveModuleUrl("~/Styles/settings.css") %>" />--%>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="main" runat="server">
     <asp:Repeater runat="server" ID="repeaterFields" ItemType="Wheatech.Modulize.Samples.Settings.Services.SettingsField" OnItemDataBound="repeaterFields_OnItemDataBound">

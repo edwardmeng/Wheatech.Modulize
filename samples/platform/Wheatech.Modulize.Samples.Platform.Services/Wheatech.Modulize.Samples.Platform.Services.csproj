@@ -63,6 +63,7 @@
     <Compile Include="IDatabaseService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLiteDatabaseService.cs" />
+    <Compile Include="SqlServerDatabaseService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

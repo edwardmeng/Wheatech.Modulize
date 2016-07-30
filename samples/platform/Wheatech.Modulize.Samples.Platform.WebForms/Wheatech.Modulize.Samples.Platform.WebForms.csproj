@@ -161,6 +161,14 @@
       <Project>{c46d1927-61dc-4231-a8b3-11612349dd52}</Project>
       <Name>Wheatech.Modulize.SQLite</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Wheatech.Modulize.SqlServer\Wheatech.Modulize.SqlServer.csproj">
+      <Project>{d92e19e2-0eeb-4594-8bdd-810eb48499f8}</Project>
+      <Name>Wheatech.Modulize.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Wheatech.Modulize.Web.Optimization\Wheatech.Modulize.Web.Optimization.csproj">
+      <Project>{d1d52519-81df-4615-a6e2-5ef48dbb647b}</Project>
+      <Name>Wheatech.Modulize.Web.Optimization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\src\Wheatech.Modulize.Web\Wheatech.Modulize.Web.csproj">
       <Project>{a1861bdd-0fa1-407b-987f-cb1e97e47a5e}</Project>
       <Name>Wheatech.Modulize.Web</Name>

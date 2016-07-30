@@ -20,7 +20,7 @@
             </asp:ContentPlaceHolder>
         </div>
     </form>
-    <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/jquery-2.2.4.min.js") %>"></script>
+    <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/jquery-3.1.0.min.js") %>"></script>
     <script type="text/javascript" src="<%= ResolveUrl("~/Scripts/bootstrap.min.js") %>"></script>
     <asp:ContentPlaceHolder ID="footer" runat="server">
     </asp:ContentPlaceHolder>

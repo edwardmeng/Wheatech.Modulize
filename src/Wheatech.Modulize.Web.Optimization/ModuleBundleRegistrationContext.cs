@@ -23,7 +23,9 @@ namespace Wheatech.Modulize.Web.Optimization
 
         public ModuleBundle AddScriptBundle(string virtualPath, string cdnPath)
         {
-            return new ModuleBundle(Module, new ScriptBundle(virtualPath, cdnPath));
+            var bundle = new ScriptBundle(virtualPath, cdnPath);
+            Bundles.Add(bundle);
+            return new ModuleBundle(Module, bundle);
         }
 
         public ModuleBundle AddScriptBundle(string virtualPath)
@@ -33,7 +35,9 @@ namespace Wheatech.Modulize.Web.Optimization
 
         public ModuleBundle AddStyleBundle(string virtualPath, string cdnPath)
         {
-            return new ModuleBundle(Module, new StyleBundle(virtualPath, cdnPath));
+            var bundle = new StyleBundle(virtualPath,cdnPath);
+            Bundles.Add(bundle);
+            return new ModuleBundle(Module, bundle);
         }
 
         public ModuleBundle AddStyleBundle(string virtualPath)
