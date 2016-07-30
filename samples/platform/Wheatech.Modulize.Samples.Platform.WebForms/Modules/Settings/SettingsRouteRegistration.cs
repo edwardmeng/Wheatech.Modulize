@@ -2,9 +2,9 @@
 
 namespace Wheatech.Modulize.Samples.Settings.WebForms
 {
-    public class SettingsModuleRegistration:ModuleRegistration
+    public class SettingsRouteRegistration:ModuleRouteRegistration
     {
-        public override void RegisterModule(ModuleRegistrationContext context)
+        public override void RegisterRoutes(ModuleRouteRegistrationContext context)
         {
             context.MapPageRoute("Settings.Default", "settings", "~/Settings.aspx");
         }

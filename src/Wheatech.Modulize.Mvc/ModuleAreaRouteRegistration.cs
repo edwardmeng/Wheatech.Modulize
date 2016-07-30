@@ -4,9 +4,9 @@ using Wheatech.Modulize.WebHelper;
 
 namespace Wheatech.Modulize.Mvc
 {
-    public abstract class ModuleAreaRegistration
+    public abstract class ModuleAreaRouteRegistration
     {
-        public abstract void RegisterModuleArea(ModuleAreaRegistrationContext context);
+        public abstract void RegisterRoutes(ModuleAreaRouteRegistrationContext context);
 
         public abstract string AreaName { get; }
 
@@ -14,18 +14,18 @@ namespace Wheatech.Modulize.Mvc
 
         internal void CreateContextAndRegister(RouteCollection routes, ModuleDescriptor module, object state)
         {
-            var context = new ModuleAreaRegistrationContext(module, AreaName, routes, state);
+            var context = new ModuleAreaRouteRegistrationContext(module, AreaName, routes, state);
             string ns = GetType().Namespace;
             if (!string.IsNullOrEmpty(ns))
             {
                 context.Namespaces.Add(ns + ".*");
             }
-            RegisterModuleArea(context);
+            RegisterRoutes(context);
         }
 
         private static bool IsModuleAreaRegistrationType(Type type)
         {
-            return typeof(ModuleAreaRegistration).IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null;
+            return typeof(ModuleAreaRouteRegistration).IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null;
         }
 
         public static void RegisterModuleAreas(ModuleDescriptor module, object state)
@@ -42,7 +42,7 @@ namespace Wheatech.Modulize.Mvc
         {
             foreach (Type type in module.FilterTypesInModule(IsModuleAreaRegistrationType))
             {
-                var registration = (ModuleAreaRegistration)Activator.CreateInstance(type);
+                var registration = (ModuleAreaRouteRegistration)Activator.CreateInstance(type);
                 registration.Module = module;
                 registration.CreateContextAndRegister(routes, module, state);
             }

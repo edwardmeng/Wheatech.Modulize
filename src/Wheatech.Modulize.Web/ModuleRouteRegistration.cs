@@ -4,11 +4,11 @@ using Wheatech.Modulize.WebHelper;
 
 namespace Wheatech.Modulize.Web
 {
-    public abstract class ModuleRegistration
+    public abstract class ModuleRouteRegistration
     {
         public ModuleDescriptor Module { get; private set; }
 
-        public abstract void RegisterModule(ModuleRegistrationContext context);
+        public abstract void RegisterRoutes(ModuleRouteRegistrationContext context);
 
         public static void RegisterModule(ModuleDescriptor module, object state)
         {
@@ -24,7 +24,7 @@ namespace Wheatech.Modulize.Web
         {
             foreach (Type type in module.FilterTypesInModule(IsModuleRegistrationType))
             {
-                var registration = (ModuleRegistration)Activator.CreateInstance(type);
+                var registration = (ModuleRouteRegistration)Activator.CreateInstance(type);
                 registration.Module = module;
                 registration.CreateContextAndRegister(routes, module, state);
             }
@@ -32,12 +32,12 @@ namespace Wheatech.Modulize.Web
 
         internal void CreateContextAndRegister(RouteCollection routes, ModuleDescriptor module, object state)
         {
-            RegisterModule(new ModuleRegistrationContext(module, routes, state));
+            RegisterRoutes(new ModuleRouteRegistrationContext(module, routes, state));
         }
 
         private static bool IsModuleRegistrationType(Type type)
         {
-            return typeof(ModuleRegistration).IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null;
+            return typeof(ModuleRouteRegistration).IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null;
         }
     }
 }

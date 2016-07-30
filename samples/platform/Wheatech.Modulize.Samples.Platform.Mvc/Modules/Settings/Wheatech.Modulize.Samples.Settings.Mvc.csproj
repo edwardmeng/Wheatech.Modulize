@@ -99,7 +99,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Model\SettingModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsModuleRegistration.cs" />
+    <Compile Include="SettingsRouteRegistration.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

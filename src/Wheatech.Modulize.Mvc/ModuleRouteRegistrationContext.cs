@@ -6,11 +6,11 @@ using System.Web.Routing;
 
 namespace Wheatech.Modulize.Mvc
 {
-    public class ModuleRegistrationContext
+    public class ModuleRouteRegistrationContext
     {
         private readonly HashSet<string> _namespaces;
 
-        public ModuleRegistrationContext(ModuleDescriptor module, RouteCollection routes, object state)
+        public ModuleRouteRegistrationContext(ModuleDescriptor module, RouteCollection routes, object state)
         {
             if (module == null)
             {
@@ -26,7 +26,7 @@ namespace Wheatech.Modulize.Mvc
             State = state;
         }
 
-        public ModuleRegistrationContext(ModuleDescriptor module, RouteCollection routes) : this(module, routes, null)
+        public ModuleRouteRegistrationContext(ModuleDescriptor module, RouteCollection routes) : this(module, routes, null)
         {
         }
 
@@ -34,7 +34,7 @@ namespace Wheatech.Modulize.Mvc
 
         public ICollection<string> Namespaces => _namespaces;
 
-        public RouteCollection Routes { get; }
+        protected RouteCollection Routes { get; }
 
         public object State { get; }
 

@@ -3,22 +3,22 @@ using System.Web.Routing;
 
 namespace Wheatech.Modulize.Web
 {
-    public class ModuleRegistrationContext
+    public class ModuleRouteRegistrationContext
     {
-        public ModuleRegistrationContext(ModuleDescriptor module, RouteCollection routes, object state)
+        public ModuleRouteRegistrationContext(ModuleDescriptor module, RouteCollection routes, object state)
         {
             Module = module;
             Routes = routes;
             State = state;
         }
 
-        public ModuleRegistrationContext(ModuleDescriptor module, RouteCollection routes) : this(module, routes, null)
+        public ModuleRouteRegistrationContext(ModuleDescriptor module, RouteCollection routes) : this(module, routes, null)
         {
         }
 
         public ModuleDescriptor Module { get; }
 
-        public RouteCollection Routes { get; }
+        protected RouteCollection Routes { get; }
 
         public object State { get; }
 

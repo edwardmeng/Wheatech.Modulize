@@ -22,7 +22,7 @@ namespace Wheatech.Modulize.Web
             {
                 virtualPath = virtualPath.Substring(0, qmark);
             }
-            virtualPath = PathHelper.ToAppRelativePath(context, PathUtils.ResolvePath(_module.ShadowPath, virtualPath));
+            virtualPath = PathHelper.ToAppRelativePath(PathUtils.ResolvePath(_module.ShadowPath, virtualPath));
             var page = (Page)base.GetHandler(context.ApplicationInstance.Context, context.Request.RequestType, virtualPath, null);
             if (page != null)
             {

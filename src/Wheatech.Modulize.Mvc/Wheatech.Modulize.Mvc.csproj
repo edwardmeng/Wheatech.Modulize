@@ -70,12 +70,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IRouteWithModule.cs" />
-    <Compile Include="ModuleAreaRegistration.cs" />
-    <Compile Include="ModuleAreaRegistrationContext.cs" />
+    <Compile Include="ModuleAreaRouteRegistration.cs" />
+    <Compile Include="ModuleAreaRouteRegistrationContext.cs" />
     <Compile Include="ModuleHelper.cs" />
     <Compile Include="ModuleRazorViewEngine.cs" />
-    <Compile Include="ModuleRegistration.cs" />
-    <Compile Include="ModuleRegistrationContext.cs" />
+    <Compile Include="ModuleRouteRegistration.cs" />
+    <Compile Include="ModuleRouteRegistrationContext.cs" />
     <Compile Include="MvcModuleRoutingExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Strings.Designer.cs">

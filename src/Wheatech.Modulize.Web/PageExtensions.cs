@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web;
 using System.Web.UI;
 using Wheatech.Modulize.WebHelper;
 
@@ -16,7 +15,7 @@ namespace Wheatech.Modulize.Web
             var module = (ModuleDescriptor)page.Items[ModulePageHandlerFactory.PageContextKey];
             if (module != null && (relativeUrl.StartsWith("~/") || relativeUrl.StartsWith("~\\")))
             {
-                return page.ResolveUrl(PathHelper.ToAppRelativePath(new HttpContextWrapper(HttpContext.Current), module.ShadowPath)) + "/" + relativeUrl.Substring(2);
+                return page.ResolveUrl(PathHelper.ToAppRelativePath(module.ShadowPath)) + "/" + relativeUrl.Substring(2);
             }
             return page.ResolveUrl(relativeUrl);
         }

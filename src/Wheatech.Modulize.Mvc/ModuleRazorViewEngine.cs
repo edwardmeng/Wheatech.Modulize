@@ -228,7 +228,7 @@ namespace Wheatech.Modulize.Mvc
         {
             string result = string.Empty;
             searchedLocations = new string[locations.Count];
-            var modulePath = module == null ? null : PathHelper.ToAppRelativePath(controllerContext.HttpContext, module.ShadowPath);
+            var modulePath = module == null ? null : PathHelper.ToAppRelativePath(module.ShadowPath);
             for (int i = 0; i < locations.Count; i++)
             {
                 var location = locations[i];

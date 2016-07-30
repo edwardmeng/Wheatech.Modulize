@@ -4,9 +4,9 @@ using Wheatech.Modulize.Mvc.Properties;
 
 namespace Wheatech.Modulize.Mvc
 {
-    public class ModuleAreaRegistrationContext : ModuleRegistrationContext
+    public class ModuleAreaRouteRegistrationContext : ModuleRouteRegistrationContext
     {
-        public ModuleAreaRegistrationContext(ModuleDescriptor module, string areaName, RouteCollection routes, object state) : base(module, routes, state)
+        public ModuleAreaRouteRegistrationContext(ModuleDescriptor module, string areaName, RouteCollection routes, object state) : base(module, routes, state)
         {
             if (string.IsNullOrEmpty(areaName))
             {
@@ -15,7 +15,7 @@ namespace Wheatech.Modulize.Mvc
             AreaName = areaName;
         }
 
-        public ModuleAreaRegistrationContext(ModuleDescriptor module, string areaName, RouteCollection routes) : this(module, areaName, routes, null)
+        public ModuleAreaRouteRegistrationContext(ModuleDescriptor module, string areaName, RouteCollection routes) : this(module, areaName, routes, null)
         {
         }
 

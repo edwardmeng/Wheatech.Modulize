@@ -2,9 +2,9 @@
 
 namespace Wheatech.Modulize.Samples.Settings.Mvc
 {
-    public class SettingsModuleRegistration : ModuleRegistration
+    public class SettingsRouteRegistration : ModuleRouteRegistration
     {
-        public override void RegisterModule(ModuleRegistrationContext context)
+        public override void RegisterRoutes(ModuleRouteRegistrationContext context)
         {
             context.MapRoute("Settings.Default", "Settings/{controller}/{action}",
                 new { controller = "Home", action = "Index" });

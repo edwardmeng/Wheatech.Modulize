@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Web;
+using System.Web.Hosting;
 
 namespace Wheatech.Modulize.WebHelper
 {
     internal static class PathHelper
     {
-        public static string ToAppRelativePath(HttpContextBase context, string absolutePath)
+        public static string ToAppRelativePath(string absolutePath)
         {
-            var appSegments = SplitPathSegments(context.Request.PhysicalApplicationPath);
+            var appSegments = SplitPathSegments(HostingEnvironment.MapPath("~/"));
             var pathSegments = SplitPathSegments(absolutePath);
             while (appSegments.Count > 0 && pathSegments.Count > 0)
             {

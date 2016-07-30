@@ -1,6 +1,6 @@
-﻿namespace Wheatech.Modulize.Mvc
+﻿namespace Wheatech.Modulize.Web.Optimization
 {
-    internal class MvcModuleRoutingExtension : IModuleContainerExtension
+    internal class ModuleBundleExtension : IModuleContainerExtension
     {
         public void Initialize(IModuleContainer container)
         {
@@ -9,8 +9,7 @@
 
         private void OnModuleLoaded(object sender, ModuleEventArgs e)
         {
-            ModuleRouteRegistration.RegisterModule(e.Module);
-            ModuleAreaRouteRegistration.RegisterModuleAreas(e.Module);
+            ModuleBundleRegistration.RegisterModule(e.Module);
         }
 
         public void Remove(IModuleContainer container)
