@@ -77,6 +77,7 @@
     <Compile Include="ModuleRouteRegistration.cs" />
     <Compile Include="ModuleRouteRegistrationContext.cs" />
     <Compile Include="MvcModuleRoutingExtension.cs" />
+    <Compile Include="PathHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -84,7 +85,10 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="RouteCollectionExtensions.cs" />
+    <Compile Include="RouteValuesHelpers.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="UrlHelperExtensions.cs" />
+    <Compile Include="UrlRewriterHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wheatech.Modulize\Wheatech.Modulize.csproj">

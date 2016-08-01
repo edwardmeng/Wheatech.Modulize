@@ -1,4 +1,6 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Globalization;
+using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace Wheatech.Modulize.Mvc
@@ -40,5 +42,48 @@ namespace Wheatech.Modulize.Mvc
             return GetAreaName(routeData.Route);
         }
 
+        public static string GenerateUrl(string routeName, string actionName, string controllerName, string module, RouteValueDictionary routeValues, RouteCollection routeCollection,
+            RequestContext requestContext, bool includeImplicitMvcValues)
+        {
+            if (routeCollection == null)
+            {
+                throw new ArgumentNullException(nameof(routeCollection));
+            }
+
+            if (requestContext == null)
+            {
+                throw new ArgumentNullException(nameof(requestContext));
+            }
+
+            var mergedRouteValues = RouteValuesHelpers.MergeRouteValues(actionName, controllerName, module, requestContext.RouteData.Values, routeValues, includeImplicitMvcValues);
+            var vpd = routeCollection.GetVirtualPathForModuleArea(requestContext, routeName, mergedRouteValues);
+            return vpd == null ? null : PathHelpers.GenerateClientUrl(requestContext.HttpContext, vpd.VirtualPath);
+        }
+
+        public static string GenerateUrl(string routeName, string actionName, string controllerName, string module, string protocol, string hostName, string fragment, RouteValueDictionary routeValues, RouteCollection routeCollection, RequestContext requestContext, bool includeImplicitMvcValues)
+        {
+            string url = GenerateUrl(routeName, actionName, controllerName, module, routeValues, routeCollection, requestContext, includeImplicitMvcValues);
+
+            if (url == null) return null;
+            if (!string.IsNullOrEmpty(fragment))
+            {
+                url = url + "#" + fragment;
+            }
+
+            if (string.IsNullOrEmpty(protocol) && string.IsNullOrEmpty(hostName)) return url;
+            Uri requestUrl = requestContext.HttpContext.Request.Url;
+            protocol = !string.IsNullOrEmpty(protocol) ? protocol : Uri.UriSchemeHttp;
+            hostName = !string.IsNullOrEmpty(hostName) ? hostName : requestUrl?.Host;
+
+            string port = string.Empty;
+            string requestProtocol = requestUrl?.Scheme;
+
+            if (string.Equals(protocol, requestProtocol, StringComparison.OrdinalIgnoreCase))
+            {
+                port = requestUrl.IsDefaultPort ? string.Empty : ":" + Convert.ToString(requestUrl.Port, CultureInfo.InvariantCulture);
+            }
+
+            return protocol + Uri.SchemeDelimiter + hostName + port + url;
+        }
     }
 }
