@@ -69,6 +69,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AjaxExtensions.cs" />
+    <Compile Include="HtmlHelperExtensions.cs" />
     <Compile Include="IRouteWithModule.cs" />
     <Compile Include="ModuleAreaRouteRegistration.cs" />
     <Compile Include="ModuleAreaRouteRegistrationContext.cs" />
