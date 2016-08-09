@@ -3,11 +3,11 @@ using System.Web.Routing;
 
 namespace Wheatech.Modulize.Mvc
 {
-    public static class RouteValuesHelpers
+    internal static class RouteValuesHelpers
     {
         public static RouteValueDictionary GetRouteValues(RouteValueDictionary routeValues)
         {
-            return (routeValues != null) ? new RouteValueDictionary(routeValues) : new RouteValueDictionary();
+            return routeValues != null ? new RouteValueDictionary(routeValues) : new RouteValueDictionary();
         }
 
         public static RouteValueDictionary MergeRouteValues(string actionName, string controllerName, string module, RouteValueDictionary implicitRouteValues, RouteValueDictionary routeValues, bool includeImplicitMvcValues)

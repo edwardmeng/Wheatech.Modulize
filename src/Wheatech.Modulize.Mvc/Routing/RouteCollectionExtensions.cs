@@ -113,15 +113,15 @@ namespace Wheatech.Modulize.Mvc
             var filteredRoutes = FilterRouteCollection(routes, areaName, moduleDescriptor, out usingAreas, out usingModules);
             if (usingAreas)
             {
-                dictionary = new RouteValueDictionary(dictionary);
+                dictionary = RouteValuesHelpers.GetRouteValues(dictionary);
                 dictionary.Remove("area");
             }
             if (usingModules)
             {
-                dictionary = new RouteValueDictionary(dictionary);
+                dictionary = RouteValuesHelpers.GetRouteValues(dictionary);
                 dictionary.Remove("module");
             }
-            return filteredRoutes.GetVirtualPath(requestContext, dictionary);
+            return filteredRoutes.GetVirtualPath(requestContext, RouteValuesHelpers.GetRouteValues(dictionary));
         }
 
         public static VirtualPathData GetVirtualPathForModuleArea(this RouteCollection routes, RequestContext requestContext, string name, RouteValueDictionary values)
