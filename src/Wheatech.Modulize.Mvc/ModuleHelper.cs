@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Globalization;
 using System.Reflection;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using Wheatech.Modulize.Mvc.Properties;
+using Wheatech.Modulize.WebHelper;
 
 namespace Wheatech.Modulize.Mvc
 {
@@ -63,5 +64,26 @@ namespace Wheatech.Modulize.Mvc
             var vpd = routeCollection.GetVirtualPathForModuleArea(requestContext, routeName, mergedRouteValues);
             return vpd == null ? null : (string)GenerateClientUrlMethod.Invoke(null, new object[] { requestContext.HttpContext, vpd.VirtualPath });
         }
-   }
+
+        public static string GenerateContentUrl(string contentPath, string module, RequestContext requestContext)
+        {
+            if (string.IsNullOrEmpty(contentPath))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(contentPath));
+            }
+            if (requestContext == null)
+            {
+                throw new ArgumentNullException(nameof(requestContext));
+            }
+            if (contentPath[0] == '~')
+            {
+                var moduleDescriptor = !string.IsNullOrEmpty(module) ? Modulizer.GetModule(module) : GetModule(requestContext.RouteData);
+                if (moduleDescriptor != null)
+                {
+                    contentPath = PathHelper.ToAppRelativePath(PathUtils.ResolvePath(moduleDescriptor.ShadowPath, contentPath));
+                }
+            }
+            return UrlHelper.GenerateContentUrl(contentPath, requestContext.HttpContext);
+        }
+    }
 }
