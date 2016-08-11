@@ -32,9 +32,9 @@ namespace Wheatech.Modulize.Mvc
             {
                 foreach (var route in routes)
                 {
-                    string routeAreaName = ModuleHelper.GetAreaName(route) ?? string.Empty;
+                    string routeAreaName = ModuleUtil.GetAreaName(route) ?? string.Empty;
                     usingAreas |= routeAreaName.Length > 0;
-                    var routeModule = ModuleHelper.GetModule(route);
+                    var routeModule = ModuleUtil.GetModule(route);
                     usingModules |= routeModule != null;
                     var sameAreaName = string.Equals(routeAreaName, areaName, StringComparison.OrdinalIgnoreCase);
                     var sameModule = module == routeModule;
@@ -90,7 +90,7 @@ namespace Wheatech.Modulize.Mvc
                 }
                 else if (requestContext != null)
                 {
-                    areaName = ModuleHelper.GetAreaName(requestContext.RouteData);
+                    areaName = ModuleUtil.GetAreaName(requestContext.RouteData);
                 }
                 if (values.TryGetValue("module", out module))
                 {
@@ -106,7 +106,7 @@ namespace Wheatech.Modulize.Mvc
                 }
                 else if (requestContext != null)
                 {
-                    moduleDescriptor = ModuleHelper.GetModule(requestContext.RouteData);
+                    moduleDescriptor = ModuleUtil.GetModule(requestContext.RouteData);
                 }
             }
             var dictionary = values;

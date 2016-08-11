@@ -448,7 +448,7 @@ namespace Wheatech.Modulize.Mvc
             {
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(linkText));
             }
-            var targetUrl = ModuleHelper.GenerateUrl(null, actionName, controllerName, module, routeValues, ajaxHelper.RouteCollection, ajaxHelper.ViewContext.RequestContext, true);
+            var targetUrl = ModuleUtil.GenerateUrl(null, actionName, controllerName, module, routeValues, ajaxHelper.RouteCollection, ajaxHelper.ViewContext.RequestContext, true);
             return MvcHtmlString.Create(GenerateLink(ajaxHelper, linkText, targetUrl, ajaxOptions, htmlAttributes));
         }
 
@@ -810,7 +810,7 @@ namespace Wheatech.Modulize.Mvc
         /// <returns>An opening &lt;form&gt; tag.</returns>
         public static MvcForm BeginModuleForm(this AjaxHelper ajaxHelper, string actionName, string controllerName, string module, RouteValueDictionary routeValues, AjaxOptions ajaxOptions, IDictionary<string, object> htmlAttributes)
         {
-            var formAction = ModuleHelper.GenerateUrl(null, actionName, controllerName, module, routeValues ?? new RouteValueDictionary(), ajaxHelper.RouteCollection, ajaxHelper.ViewContext.RequestContext, true);
+            var formAction = ModuleUtil.GenerateUrl(null, actionName, controllerName, module, routeValues ?? new RouteValueDictionary(), ajaxHelper.RouteCollection, ajaxHelper.ViewContext.RequestContext, true);
             return ajaxHelper.FormHelper(formAction, ajaxOptions, htmlAttributes);
         }
     

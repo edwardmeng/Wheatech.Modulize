@@ -74,11 +74,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Html\AjaxExtensions.cs" />
-    <Compile Include="Html\HtmlHelperExtensions.cs" />
+    <Compile Include="Html\ModuleHtmlHelper.cs" />
+    <Compile Include="ModuleHelper.cs" />
+    <Compile Include="ModuleRazorHost.cs" />
+    <Compile Include="ModuleViewPage.cs" />
     <Compile Include="Routing\IRouteWithModule.cs" />
     <Compile Include="Routing\ModuleAreaRouteRegistration.cs" />
     <Compile Include="Routing\ModuleAreaRouteRegistrationContext.cs" />
-    <Compile Include="ModuleHelper.cs" />
+    <Compile Include="ModuleUtil.cs" />
     <Compile Include="ModuleRazorViewEngine.cs" />
     <Compile Include="Routing\ModuleRouteRegistration.cs" />
     <Compile Include="Routing\ModuleRouteRegistrationContext.cs" />

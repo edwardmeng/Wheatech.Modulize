@@ -10,11 +10,11 @@ namespace Wheatech.Modulize.Mvc
     /// <summary>
     /// Represents support for HTML links in a module.
     /// </summary>
-    public static class HtmlHelperExtensions
+    public static class ModuleHtmlHelper
     {
         private static string GenerateLinkInternal(RequestContext requestContext, RouteCollection routeCollection, string linkText, string routeName, string actionName, string controllerName, string module, RouteValueDictionary routeValues, IDictionary<string, object> htmlAttributes, bool includeImplicitMvcValues)
         {
-            string str = ModuleHelper.GenerateUrl(routeName, actionName, controllerName, module, routeValues, routeCollection, requestContext, includeImplicitMvcValues);
+            string str = ModuleUtil.GenerateUrl(routeName, actionName, controllerName, module, routeValues, routeCollection, requestContext, includeImplicitMvcValues);
             TagBuilder builder = new TagBuilder("a")
             {
                 InnerHtml = !string.IsNullOrEmpty(linkText) ? HttpUtility.HtmlEncode(linkText) : string.Empty
