@@ -182,9 +182,9 @@ namespace Wheatech.Modulize.Mvc
         {
             searchedLocations = new string[0];
             if (string.IsNullOrEmpty(name)) return string.Empty;
-            var module = ModuleUtil.GetModule(controllerContext.RouteData);
+            var module = ModuleHelper.GetModule(controllerContext.RouteData);
             bool usingModule = module!=null;
-            var area = ModuleUtil.GetAreaName(controllerContext.RouteData);
+            var area = ModuleHelper.GetAreaName(controllerContext.RouteData);
             bool usingAreas = !string.IsNullOrEmpty(area);
             var viewLocations = GetViewLocations(locations, usingAreas ? areaLocations : null, usingModule ? moduleLocations : null,
                 usingModule && usingAreas ? moduleAreaLocations : null);

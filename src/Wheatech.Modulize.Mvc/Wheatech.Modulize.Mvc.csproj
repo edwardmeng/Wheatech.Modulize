@@ -73,15 +73,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Html\AjaxExtensions.cs" />
+    <Compile Include="Html\ModuleAjaxHelper.cs" />
     <Compile Include="Html\ModuleHtmlHelper.cs" />
-    <Compile Include="ModuleHelper.cs" />
-    <Compile Include="ModuleRazorHost.cs" />
-    <Compile Include="ModuleViewPage.cs" />
+    <Compile Include="ModulizeExtensions.cs" />
     <Compile Include="Routing\IRouteWithModule.cs" />
     <Compile Include="Routing\ModuleAreaRouteRegistration.cs" />
     <Compile Include="Routing\ModuleAreaRouteRegistrationContext.cs" />
-    <Compile Include="ModuleUtil.cs" />
+    <Compile Include="ModuleHelper.cs" />
     <Compile Include="ModuleRazorViewEngine.cs" />
     <Compile Include="Routing\ModuleRouteRegistration.cs" />
     <Compile Include="Routing\ModuleRouteRegistrationContext.cs" />
@@ -95,7 +93,7 @@
     <Compile Include="Routing\RouteCollectionExtensions.cs" />
     <Compile Include="Routing\RouteValuesHelpers.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Html\UrlHelperExtensions.cs" />
+    <Compile Include="Html\ModuleUrlHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Wheatech.Modulize\Wheatech.Modulize.csproj">
